@@ -124,7 +124,7 @@ const EronSelect = ({
         onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        className={`w-full h-[42px] px-3 bg-white border text-left flex items-center justify-between rounded-[8px] transition-all text-xs ${
+        className={`w-full h-[42px] px-3 saas-input-trailing bg-white border text-left flex items-center justify-between rounded-[8px] transition-all text-xs ${
           isOpen ? 'border-[#FF8A1F] ring-2 ring-[#FF8A1F]/20' : 'border-[#D0D5DD] hover:border-gray-400'
         } ${disabled ? 'bg-[#F2F4F7] text-[#98A2B3] cursor-not-allowed' : 'text-[#101828] cursor-pointer'}`}
       >

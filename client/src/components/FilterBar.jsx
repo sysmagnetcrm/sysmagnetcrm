@@ -35,18 +35,17 @@ const FilterBar = ({
     <div className="space-y-2 mb-4">
       {/* Single Cohesive Horizontal Filter Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-        {/* Search Input (Flex 1, 42px Height) */}
+        {/* Search Input (Flex 1, 42px Height, 40px left padding via saas-input-icon) */}
         <div className="relative flex-1">
-          <Icon
-            icon="heroicons:magnifying-glass"
-            className="w-4 h-4 text-[#98A2B3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-          />
+          <div className="input-leading-icon">
+            <Icon icon="heroicons:magnifying-glass" className="w-4 h-4" />
+          </div>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="saas-input pl-9.5 text-xs h-[42px]"
+            className="saas-input saas-input-icon text-xs h-[42px]"
           />
         </div>
 

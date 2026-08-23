@@ -48,6 +48,47 @@
   @apply w-full h-[42px] px-3.5 text-sm text-[#101828] bg-white border border-[#D0D5DD] rounded-[8px] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#FF8A1F]/20 focus:border-[#FF8A1F] transition-all disabled:bg-[#F2F4F7];
 }
 
+/* Global Form Control Icon Spacing Tokens - Enforces exact 40px text indentation when icons are present */
+.saas-input-icon {
+  padding-left: 40px !important;
+}
+
+.saas-input-trailing {
+  padding-right: 40px !important;
+}
+
+.saas-input-both {
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+.input-leading-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #98A2B3;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.currency-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: #667085;
+  pointer-events: none;
+  z-index: 10;
+}
+
 .saas-label {
   @apply block text-[13px] font-semibold text-[#344054] mb-1.5;
 }

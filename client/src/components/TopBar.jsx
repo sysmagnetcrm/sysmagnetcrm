@@ -382,15 +382,17 @@ const TopBar = ({
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
           <div className="drawer-backdrop" onClick={() => setShowSearchModal(false)} />
           <div className="relative bg-white rounded-[16px] border border-[#E4E7EC] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
-            <div className="p-4 border-b border-[#E4E7EC] flex items-center gap-3">
-              <Icon icon="heroicons:magnifying-glass" className="w-5 h-5 text-[#98A2B3] shrink-0" />
+            <div className="p-3 border-b border-[#E4E7EC] flex items-center gap-2 relative">
+              <div className="input-leading-icon">
+                <Icon icon="heroicons:magnifying-glass" className="w-5 h-5" />
+              </div>
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search leads, clients, tasks..."
-                className="w-full text-sm text-[#111827] placeholder-[#98A2B3] bg-transparent focus:outline-none"
+                className="saas-input saas-input-icon w-full border-none focus:ring-0 text-sm"
               />
               <button
                 onClick={() => setShowSearchModal(false)}

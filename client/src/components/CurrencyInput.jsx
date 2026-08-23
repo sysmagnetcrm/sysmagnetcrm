@@ -29,10 +29,8 @@ const CurrencyInput = ({
           {label} {required && <span className="text-[#F04438]">*</span>}
         </label>
       )}
-      <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085] pointer-events-none">
-          ₹
-        </span>
+      <div className="relative w-full">
+        <span className="currency-prefix">₹</span>
         <input
           type="text"
           disabled={disabled}
@@ -40,7 +38,7 @@ const CurrencyInput = ({
           value={formatDisplay(value)}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="saas-input pl-8 font-medium h-[42px]"
+          className="saas-input saas-input-icon font-medium h-[42px]"
         />
       </div>
     </div>
