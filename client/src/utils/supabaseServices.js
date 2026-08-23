@@ -284,11 +284,25 @@ export const featuresAPI = {
 };
 
 export const rolesAPI = {
-  getAll: async () => ({ data: ['admin', 'sales', 'digital_marketer', 'developer', 'hr', 'client'] }),
+  getAll: () => wrap(supabase.from('roles').select('*').order('name')),
+  create: (data) => wrap(supabase.from('roles').insert(data).select().single()),
+  update: (id, data) => wrap(supabase.from('roles').update(data).eq('id', id).select().single()),
+  delete: (id) => wrap(supabase.from('roles').delete().eq('id', id)),
 };
 
 export const permissionsAPI = {
-  getAll: async () => ({ data: [] }),
+  getAll: () => wrap(supabase.from('permissions').select('*').order('category')),
+  getRolePermissions: (roleId) => wrap(supabase.from('role_permissions').select('*, permissions(*)').eq('role_id', roleId)),
+  setRolePermissions: async (roleId, permissionIds) => {
+    // Delete existing
+    await wrap(supabase.from('role_permissions').delete().eq('role_id', roleId));
+    // Insert new
+    if (permissionIds.length > 0) {
+      const inserts = permissionIds.map(pid => ({ role_id: roleId, permission_id: pid }));
+      return wrap(supabase.from('role_permissions').insert(inserts));
+    }
+    return { data: [] };
+  }
 };
 
 export const meAPI = {

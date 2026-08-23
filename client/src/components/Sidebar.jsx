@@ -76,7 +76,7 @@ const Sidebar = ({
       key: 'admin',
       items: [
         { id: 'users', label: 'Users', icon: 'heroicons:user-circle', roles: ['admin'] },
-        { id: 'profile', label: 'Settings', icon: 'heroicons:cog-6-tooth', roles: ['admin', 'sales', 'developer', 'hr', 'finance', 'client', 'digital_marketer'] },
+        { id: 'settings', label: 'Settings', icon: 'heroicons:cog-6-tooth', roles: ['admin', 'sales', 'developer', 'hr', 'finance', 'client', 'digital_marketer'] },
       ]
     }
   ];

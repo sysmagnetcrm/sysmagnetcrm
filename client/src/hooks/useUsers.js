@@ -27,14 +27,7 @@ export const useUsers = (filters = {}, enabled = true) => {
       setUsers(prev => [response.data, ...prev]);
       return { success: true, data: response.data };
     } catch (err) {
-      // For demo purposes, add to local state
-      const newUser = { 
-        id: Date.now(), 
-        ...userData, 
-        created_at: new Date().toISOString() 
-      };
-      setUsers(prev => [newUser, ...prev]);
-      return { success: true, data: newUser };
+      return { success: false, error: err };
     }
   };
 
@@ -48,13 +41,7 @@ export const useUsers = (filters = {}, enabled = true) => {
       );
       return { success: true };
     } catch (err) {
-      // For demo purposes, update local state
-      setUsers(prev => 
-        prev.map(user => 
-          user.id === id ? { ...user, ...userData, updated_at: new Date().toISOString() } : user
-        )
-      );
-      return { success: true };
+      return { success: false, error: err };
     }
   };
 
@@ -64,9 +51,7 @@ export const useUsers = (filters = {}, enabled = true) => {
       setUsers(prev => prev.filter(user => user.id !== id));
       return { success: true };
     } catch (err) {
-      // For demo purposes, update local state
-      setUsers(prev => prev.filter(user => user.id !== id));
-      return { success: true };
+      return { success: false, error: err };
     }
   };
 

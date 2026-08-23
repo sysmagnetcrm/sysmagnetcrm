@@ -39,6 +39,7 @@ import AdminClientTasks from './components/AdminClientTasks';
 import StaffWorkboard from './components/StaffWorkboard';
 import ModuleErrorBoundary from './components/ModuleErrorBoundary';
 import OfflineBanner from './components/OfflineBanner';
+import Settings from './components/Settings';
 import { useUIPreferences } from './context/UIPreferencesContext';
 import { normalizeError } from './utils/errorHandler';
 
@@ -499,7 +500,7 @@ function AppContent() {
             onRefreshAgents={refetchAgents}
             salesUsers={salesAgents}
             onSelect={() => { }}
-            onAdd={handleAddLead}
+            onCreateLead={handleAddLead}
             onBulkImport={handleBulkImportLeads}
             onCall={() => { }}
             onMail={() => { }}
@@ -507,8 +508,8 @@ function AppContent() {
             onConvert={handleConvertLeadToClient}
             searchQuery={searchQuery}
             userRole={user?.role}
-            onDelete={handleDeleteLead}
-            onUpdate={handleUpdateLead}
+            onDeleteLead={handleDeleteLead}
+            onUpdateLead={handleUpdateLead}
             onAssignTo={async (leadId, userId) => {
               const idNum = Number(userId);
               if (!Number.isInteger(idNum)) {
@@ -579,6 +580,14 @@ function AppContent() {
         return <QA />;
       case 'automation':
         return <AutomationRuns />;
+      case 'settings':
+      case 'profile':
+        return (
+          <Settings
+            userRole={user?.role}
+            onToast={addToast}
+          />
+        );
       default:
         return <Dashboard onAddClient={() => setPanel('clients')} onAddCandidate={() => setPanel('recruitment')} onSelectTask={setSelectedTask} />;
     }

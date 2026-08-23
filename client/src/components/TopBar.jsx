@@ -106,7 +106,8 @@ const TopBar = ({
     client_portal: 'Client Portal',
     reports: 'Analytics & Reports',
     users: 'User Administration',
-    profile: 'Profile & Settings',
+    settings: 'Settings & System Preferences',
+    profile: 'Settings & System Preferences',
   };
 
   // User display name format (never show raw email address in top bar button)
