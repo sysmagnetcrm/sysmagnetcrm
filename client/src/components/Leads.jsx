@@ -4,7 +4,8 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import CustomSelect from './CustomSelect';
+import EronSelect from './EronSelect';
+import CurrencyInput from './CurrencyInput';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
@@ -116,6 +117,8 @@ const Leads = ({
     status: 'all',
     source: 'all',
     service: 'all',
+    assignedTo: 'all',
+    createdBy: 'all',
   });
 
   const [formData, setFormData] = useState({
@@ -210,7 +213,7 @@ const Leads = ({
   };
 
   const handleClearFilters = () => {
-    setActiveFilters({ status: 'all', source: 'all', service: 'all' });
+    setActiveFilters({ status: 'all', source: 'all', service: 'all', assignedTo: 'all', createdBy: 'all' });
     setSearchQuery('');
   };
 
@@ -267,7 +270,7 @@ const Leads = ({
         />
       </div>
 
-      {/* Standardized Filter & Search Bar */}
+      {/* Single Cohesive Filter Toolbar using EronSelect */}
       <FilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -277,33 +280,50 @@ const Leads = ({
             key: 'status',
             label: 'Status',
             options: [
-              { value: 'New', label: 'New' },
-              { value: 'Contacted', label: 'Contacted' },
-              { value: 'Qualified', label: 'Qualified' },
-              { value: 'Unqualified', label: 'Unqualified' },
+              { value: 'New', label: 'Status: New' },
+              { value: 'Contacted', label: 'Status: Contacted' },
+              { value: 'Qualified', label: 'Status: Qualified' },
+              { value: 'Unqualified', label: 'Status: Unqualified' },
             ],
           },
           {
             key: 'source',
             label: 'Source',
             options: [
-              { value: 'Website', label: 'Website' },
-              { value: 'Referral', label: 'Referral' },
-              { value: 'Manual Entry', label: 'Manual Entry' },
-              { value: 'LinkedIn', label: 'LinkedIn' },
+              { value: 'Website', label: 'Source: Website' },
+              { value: 'Referral', label: 'Source: Referral' },
+              { value: 'Manual Entry', label: 'Source: Manual Entry' },
+              { value: 'LinkedIn', label: 'Source: LinkedIn' },
+            ],
+          },
+          {
+            key: 'service',
+            label: 'Product',
+            options: [
+              { value: 'Web Development', label: 'Product: Web Dev' },
+              { value: 'Mobile App', label: 'Product: Mobile App' },
+              { value: 'UI/UX Design', label: 'Product: UI/UX' },
+              { value: 'Cloud Solutions', label: 'Product: Cloud' },
             ],
           },
         ]}
         advancedFilters={[
           {
-            key: 'service',
-            label: 'Service Interested',
+            key: 'assignedTo',
+            label: 'Assigned To',
             type: 'select',
             options: [
-              { value: 'Web Development', label: 'Web Development' },
-              { value: 'Mobile App', label: 'Mobile App' },
-              { value: 'UI/UX Design', label: 'UI/UX Design' },
-              { value: 'Cloud Solutions', label: 'Cloud Solutions' },
+              { value: 'admin', label: 'Admin User' },
+              { value: 'sales1', label: 'Sales Exec 1' },
+            ],
+          },
+          {
+            key: 'createdBy',
+            label: 'Created By',
+            type: 'select',
+            options: [
+              { value: 'admin', label: 'Admin' },
+              { value: 'marketer', label: 'Digital Marketer' },
             ],
           },
         ]}
@@ -312,38 +332,40 @@ const Leads = ({
         onClearFilters={handleClearFilters}
       />
 
-      {/* Main Grid View */}
-      {error ? (
-        <ErrorState
-          title="Unable to load leads"
-          description="Something went wrong while fetching leads from the server."
-          onRetry={onRetry}
-        />
-      ) : filteredLeads.length === 0 ? (
-        <EmptyState
-          icon="heroicons:user-group"
-          title="No leads found"
-          description={searchQuery || activeFilters.status !== 'all' ? "No leads match your active filters." : "Add your first lead to start building your sales pipeline."}
-          actionLabel="Add Lead"
-          onAction={handleOpenAdd}
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredLeads.map((lead) => (
-            <LeadCard
-              key={lead.id}
-              lead={lead}
-              onCall={(l) => window.open(`tel:${l.phone}`)}
-              onMail={(l) => window.open(`mailto:${l.email}`)}
-              onEdit={handleOpenEdit}
-              onDelete={(id) => setDeletingLeadId(id)}
-              userRole={userRole}
-            />
-          ))}
-        </div>
-      )}
+      {/* Main Grid & Empty State View (Natural 24px gap below toolbar) */}
+      <div className="mt-6">
+        {error ? (
+          <ErrorState
+            title="Unable to load leads"
+            description="Something went wrong while fetching leads from the server."
+            onRetry={onRetry}
+          />
+        ) : filteredLeads.length === 0 ? (
+          <EmptyState
+            icon="heroicons:user-group"
+            title="No leads found"
+            description={searchQuery || activeFilters.status !== 'all' ? "No leads match your active filters." : "Add your first lead to start building your sales pipeline."}
+            actionLabel="Add Lead"
+            onAction={handleOpenAdd}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredLeads.map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                onCall={(l) => window.open(`tel:${l.phone}`)}
+                onMail={(l) => window.open(`mailto:${l.email}`)}
+                onEdit={handleOpenEdit}
+                onDelete={(id) => setDeletingLeadId(id)}
+                userRole={userRole}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Add / Edit Lead Form Drawer */}
+      {/* Add / Edit Lead Form Drawer using EronSelect & CurrencyInput */}
       <FormDrawer
         isOpen={showAddDrawer}
         onClose={() => setShowAddDrawer(false)}
@@ -420,7 +442,7 @@ const Leads = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <CustomSelect
+            <EronSelect
               label="Initial Status"
               value={formData.status}
               onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
@@ -432,7 +454,7 @@ const Leads = ({
               ]}
             />
 
-            <CustomSelect
+            <EronSelect
               label="Lead Source"
               value={formData.source}
               onChange={(val) => setFormData(prev => ({ ...prev, source: val }))}
@@ -446,7 +468,7 @@ const Leads = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <CustomSelect
+            <EronSelect
               label="Interested Service"
               value={formData.service}
               onChange={(val) => setFormData(prev => ({ ...prev, service: val }))}
@@ -458,19 +480,12 @@ const Leads = ({
               ]}
             />
 
-            <div>
-              <label className="saas-label">Estimated Value</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">₹</span>
-                <input
-                  type="number"
-                  value={formData.value}
-                  onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-                  placeholder="50,000"
-                  className="saas-input pl-7"
-                />
-              </div>
-            </div>
+            <CurrencyInput
+              label="Estimated Value"
+              value={formData.value}
+              onChange={(val) => setFormData(prev => ({ ...prev, value: val }))}
+              placeholder="50,000"
+            />
           </div>
         </div>
 

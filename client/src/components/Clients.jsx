@@ -4,7 +4,7 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import CustomSelect from './CustomSelect';
+import EronSelect from './EronSelect';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
@@ -256,34 +256,36 @@ const Clients = ({
       />
 
       {/* Main Grid View */}
-      {error ? (
-        <ErrorState
-          title="Unable to load clients"
-          description="Something went wrong while retrieving client organizations from the server."
-          onRetry={onRetry}
-        />
-      ) : filteredClients.length === 0 ? (
-        <EmptyState
-          icon="heroicons:building-office-2"
-          title="No clients yet"
-          description="Add your first client to start managing business accounts and project deliverables."
-          actionLabel="Add Client"
-          onAction={() => setShowAddDrawer(true)}
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredClients.map((client) => (
-            <ClientCard
-              key={client.id}
-              client={client}
-              onSelect={onSelectClient}
-              onCreateTask={onCreateTask}
-              onDelete={(c) => setDeletingClient(c)}
-              userRole={userRole}
-            />
-          ))}
-        </div>
-      )}
+      <div className="mt-6">
+        {error ? (
+          <ErrorState
+            title="Unable to load clients"
+            description="Something went wrong while retrieving client organizations from the server."
+            onRetry={onRetry}
+          />
+        ) : filteredClients.length === 0 ? (
+          <EmptyState
+            icon="heroicons:building-office-2"
+            title="No clients yet"
+            description="Add your first client to start managing business accounts and project deliverables."
+            actionLabel="Add Client"
+            onAction={() => setShowAddDrawer(true)}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredClients.map((client) => (
+              <ClientCard
+                key={client.id}
+                client={client}
+                onSelect={onSelectClient}
+                onCreateTask={onCreateTask}
+                onDelete={(c) => setDeletingClient(c)}
+                userRole={userRole}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Form Drawer */}
       <FormDrawer
@@ -362,7 +364,7 @@ const Clients = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <CustomSelect
+            <EronSelect
               label="Account Status"
               value={formData.status}
               onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
@@ -374,7 +376,7 @@ const Clients = ({
               ]}
             />
 
-            <CustomSelect
+            <EronSelect
               label="Service Type"
               value={formData.service_type}
               onChange={(val) => setFormData(prev => ({ ...prev, service_type: val }))}

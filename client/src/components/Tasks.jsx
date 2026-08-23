@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import FormDrawer from './FormDrawer';
+import EronSelect from './EronSelect';
 import EmptyState from './EmptyState';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -108,98 +110,76 @@ const AddTaskDrawer = ({ isOpen, onClose, onSubmit }) => {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="drawer-backdrop" onClick={onClose}></div>
-      <div className="relative bg-white w-full max-w-md h-full shadow-modal z-50 flex flex-col animate-fade-fast border-l border-[#E5E7EB]">
-        <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Create New Task</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <Icon icon="heroicons:x-mark" className="w-5 h-5" />
-          </button>
+    <FormDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create New Task"
+      subtitle="Define action items, priority, and completion deadline."
+      submitLabel="Create Task"
+      onSubmit={handleSubmit}
+      ariaLabel="Close create task form"
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="saas-label">Task Title *</label>
+          <input
+            type="text"
+            required
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            className="saas-input"
+            placeholder="e.g. Follow up on Q3 proposal"
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-          <div>
-            <label className="saas-label" htmlFor="task-title">Task Title *</label>
-            <input
-              id="task-title"
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="saas-input"
-              placeholder="e.g. Follow up on Q3 proposal"
-            />
-          </div>
+        <div>
+          <label className="saas-label">Description</label>
+          <textarea
+            rows={3}
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            className="saas-input min-h-[90px] py-2"
+            placeholder="Details and action items..."
+          />
+        </div>
 
-          <div>
-            <label className="saas-label" htmlFor="task-desc">Description</label>
-            <textarea
-              id="task-desc"
-              rows={3}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="saas-input"
-              placeholder="Details and action items..."
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <EronSelect
+            label="Status"
+            value={formData.status}
+            onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+            options={[
+              { value: 'Pending', label: 'Pending' },
+              { value: 'In Progress', label: 'In Progress' },
+              { value: 'Completed', label: 'Completed' },
+            ]}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="saas-label" htmlFor="task-status">Status</label>
-              <select
-                id="task-status"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="saas-input"
-              >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
+          <EronSelect
+            label="Priority"
+            value={formData.priority}
+            onChange={(val) => setFormData(prev => ({ ...prev, priority: val }))}
+            options={[
+              { value: 'Low', label: 'Low' },
+              { value: 'Medium', label: 'Medium' },
+              { value: 'High', label: 'High' },
+              { value: 'Urgent', label: 'Urgent' },
+            ]}
+          />
+        </div>
 
-            <div>
-              <label className="saas-label" htmlFor="task-priority">Priority</label>
-              <select
-                id="task-priority"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="saas-input"
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Urgent">Urgent</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="saas-label" htmlFor="task-due">Due Date</label>
-            <input
-              id="task-due"
-              type="date"
-              value={formData.due_date}
-              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-              className="saas-input"
-            />
-          </div>
-
-          <div className="pt-4 flex gap-3 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary flex-1">
-              Create Task
-            </button>
-          </div>
-        </form>
+        <div>
+          <label className="saas-label">Due Date</label>
+          <input
+            type="date"
+            value={formData.due_date}
+            onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+            className="saas-input"
+          />
+        </div>
       </div>
-    </div>
+    </FormDrawer>
   );
 };
 
@@ -219,7 +199,7 @@ const Tasks = ({ tasks = [], onSelect, onMarkDone, onCreateTask, searchQuery, us
   });
 
   return (
-    <div className="space-y-6 py-2">
+    <div className="space-y-6 py-2 font-sans">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

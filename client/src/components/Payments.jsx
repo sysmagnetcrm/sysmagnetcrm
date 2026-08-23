@@ -4,7 +4,8 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import CustomSelect from './CustomSelect';
+import EronSelect from './EronSelect';
+import CurrencyInput from './CurrencyInput';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
@@ -43,8 +44,8 @@ const Payments = () => {
     clientId: '',
     invoiceNo: '',
     projectName: '',
-    invoiceTotal: '0',
-    alreadyPaid: '0',
+    invoiceTotal: '50000',
+    alreadyPaid: '20000',
     paymentAmount: '',
     paymentDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'Bank Transfer',
@@ -280,83 +281,85 @@ const Payments = () => {
         onClearFilters={handleClearFilters}
       />
 
-      {/* Payments Table */}
-      {error ? (
-        <ErrorState
-          title="Unable to load payments"
-          description="Something went wrong while loading financial records from the server."
-          onRetry={refetch}
-        />
-      ) : filteredPayments.length === 0 ? (
-        <EmptyState
-          icon="heroicons:credit-card"
-          title="No payments recorded yet"
-          description="Record your first payment to start tracking client financial history and invoice collections."
-          actionLabel="Record Payment"
-          onAction={handleOpenAdd}
-        />
-      ) : (
-        <div className="saas-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="saas-table">
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Invoice / Project</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>Balance</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPayments.map((p) => {
-                  const clientName = p.client_name || p.clients?.name || 'Client Account';
-                  const invoiceNo = p.invoice_no || `INV-${String(p.id).slice(0, 6)}`;
-                  const total = Number(p.totalAmount || p.amount || 0);
-                  const paid = Number(p.paidAmount || p.amount || 0);
-                  const balance = Math.max(0, total - paid);
-                  const status = p.payment_status || p.status || 'Completed';
+      {/* Payments Table View */}
+      <div className="mt-6">
+        {error ? (
+          <ErrorState
+            title="Unable to load payments"
+            description="Something went wrong while loading financial records from the server."
+            onRetry={refetch}
+          />
+        ) : filteredPayments.length === 0 ? (
+          <EmptyState
+            icon="heroicons:credit-card"
+            title="No payments recorded yet"
+            description="Record your first payment to start tracking client financial history and invoice collections."
+            actionLabel="Record Payment"
+            onAction={handleOpenAdd}
+          />
+        ) : (
+          <div className="saas-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="saas-table">
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Invoice / Project</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPayments.map((p) => {
+                    const clientName = p.client_name || p.clients?.name || 'Client Account';
+                    const invoiceNo = p.invoice_no || `INV-${String(p.id).slice(0, 6)}`;
+                    const total = Number(p.totalAmount || p.amount || 0);
+                    const paid = Number(p.paidAmount || p.amount || 0);
+                    const balance = Math.max(0, total - paid);
+                    const status = p.payment_status || p.status || 'Completed';
 
-                  return (
-                    <tr key={p.id} className="hover:bg-[#F9FAFB]">
-                      <td className="font-bold text-[#111827]">{clientName}</td>
-                      <td>
-                        <div className="text-xs">
-                          <p className="font-semibold text-[#111827]">{invoiceNo}</p>
-                          <p className="text-[11px] text-[#667085]">{p.projectName || 'Project Service'}</p>
-                        </div>
-                      </td>
-                      <td className="font-medium text-[#111827]">₹{total.toLocaleString('en-IN')}</td>
-                      <td className="font-semibold text-[#12B76A]">₹{paid.toLocaleString('en-IN')}</td>
-                      <td className="font-semibold text-[#667085]">₹{balance.toLocaleString('en-IN')}</td>
-                      <td>
-                        <span className={`badge ${getStatusBadge(status)}`}>
-                          {status}
-                        </span>
-                      </td>
-                      <td className="text-xs text-[#667085]">{formatDate(p.payment_date || p.created_at)}</td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => deletePayment && setDeletingPaymentId(p.id)}
-                            className="p-1.5 text-[#667085] hover:text-[#F04438] hover:bg-[#FEF3F2] rounded-[6px] transition-colors"
-                            title="Delete Payment"
-                          >
-                            <Icon icon="heroicons:trash" className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    return (
+                      <tr key={p.id} className="hover:bg-[#F9FAFB]">
+                        <td className="font-bold text-[#111827]">{clientName}</td>
+                        <td>
+                          <div className="text-xs">
+                            <p className="font-semibold text-[#111827]">{invoiceNo}</p>
+                            <p className="text-[11px] text-[#667085]">{p.projectName || 'Project Service'}</p>
+                          </div>
+                        </td>
+                        <td className="font-medium text-[#111827]">₹{total.toLocaleString('en-IN')}</td>
+                        <td className="font-semibold text-[#12B76A]">₹{paid.toLocaleString('en-IN')}</td>
+                        <td className="font-semibold text-[#667085]">₹{balance.toLocaleString('en-IN')}</td>
+                        <td>
+                          <span className={`badge ${getStatusBadge(status)}`}>
+                            {status}
+                          </span>
+                        </td>
+                        <td className="text-xs text-[#667085]">{formatDate(p.payment_date || p.created_at)}</td>
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => deletePayment && setDeletingPaymentId(p.id)}
+                              className="p-1.5 text-[#667085] hover:text-[#F04438] hover:bg-[#FEF3F2] rounded-[6px] transition-colors"
+                              title="Delete Payment"
+                            >
+                              <Icon icon="heroicons:trash" className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Record Payment Form Drawer */}
       <FormDrawer
@@ -377,7 +380,7 @@ const Payments = () => {
             </h4>
           </div>
 
-          <CustomSelect
+          <EronSelect
             label="Select Client Organization *"
             required
             value={formData.clientId}
@@ -410,7 +413,7 @@ const Payments = () => {
           </div>
         </div>
 
-        {/* Section 2: Invoice Balance Summary (Derived automatically) */}
+        {/* Section 2: Invoice Balance Summary */}
         <div className="space-y-3 pt-2">
           <div className="border-b border-[#E4E7EC] pb-2">
             <h4 className="text-[13px] font-semibold text-[#344054]">
@@ -443,18 +446,13 @@ const Payments = () => {
           </div>
 
           <div>
-            <label className="saas-label">Payment Amount (₹) *</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">₹</span>
-              <input
-                type="number"
-                required
-                value={formData.paymentAmount}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="10,000"
-                className={`saas-input pl-7 ${validationError ? 'border-[#F04438] focus:ring-[#F04438]/20' : ''}`}
-              />
-            </div>
+            <CurrencyInput
+              label="Payment Amount"
+              required
+              value={formData.paymentAmount}
+              onChange={(val) => handleAmountChange(val)}
+              placeholder="10,000"
+            />
             {validationError && (
               <p className="text-[12px] font-medium text-[#D92D20] mt-1.5 flex items-center gap-1">
                 <Icon icon="heroicons:exclamation-circle" className="w-3.5 h-3.5" />
@@ -475,7 +473,7 @@ const Payments = () => {
               />
             </div>
 
-            <CustomSelect
+            <EronSelect
               label="Payment Method"
               value={formData.paymentMethod}
               onChange={(val) => setFormData(prev => ({ ...prev, paymentMethod: val }))}
