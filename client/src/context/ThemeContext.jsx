@@ -13,7 +13,7 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     try {
-      const stored = localStorage.getItem('vibe_theme');
+      const stored = localStorage.getItem('eron_theme');
       return stored || 'light';
     } catch {
       return 'light';
@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     // Apply theme to document
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('vibe_theme', theme);
+    localStorage.setItem('eron_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

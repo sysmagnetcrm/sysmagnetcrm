@@ -5,7 +5,7 @@ import { notificationsAPI } from '../utils/supabaseServices';
 
 const getExtras = (userId) => {
   try {
-    const raw = localStorage.getItem('vibe_profile_extras');
+    const raw = localStorage.getItem('eron_profile_extras');
     const map = raw ? JSON.parse(raw) : {};
     return map[userId] || { username: '', phone: '', avatar: '' };
   } catch {
@@ -49,13 +49,13 @@ const TopBar = ({
 
     // Listen for custom event for immediate updates
     const handleProfileUpdate = () => loadExtras();
-    window.addEventListener('vibe_profile_update', handleProfileUpdate);
+    window.addEventListener('eron_profile_update', handleProfileUpdate);
 
     // Also listen for storage events (cross-tab)
     window.addEventListener('storage', handleProfileUpdate);
 
     return () => {
-      window.removeEventListener('vibe_profile_update', handleProfileUpdate);
+      window.removeEventListener('eron_profile_update', handleProfileUpdate);
       window.removeEventListener('storage', handleProfileUpdate);
     };
   }, [user?.id]);

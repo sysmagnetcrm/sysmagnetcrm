@@ -7,7 +7,7 @@ import { useTasks } from './hooks/useTasks';
 import { useCandidates } from './hooks/useCandidates';
 import { useLeads } from './hooks/useLeads';
 import { useUsers } from './hooks/useUsers';
-import { usersAPI, notificationsAPI, presenceAPI, payrollAPI } from './utils/supabaseServices';
+import { usersAPI, notificationsAPI, presenceAPI, employeesAPI } from './utils/supabaseServices';
 
 // Components
 import Login from './components/Login';
@@ -29,7 +29,6 @@ import Payroll from './components/Payroll';
 import Reports from './components/Reports';
 import HRManagement from './components/HRManagement';
 import Attendance from './components/Attendance';
-import { debugLog } from './components/DebugConsole';
 import QA from './components/QA';
 import AutomationRuns from './components/AutomationRuns';
 import Leaderboard from './components/Leaderboard';
@@ -81,7 +80,7 @@ function AppContent() {
     };
     const loadEmployees = async () => {
       try {
-        const res = await payrollAPI.getEmployees();
+        const res = await employeesAPI.getAll();
         const raw = Array.isArray(res?.data) ? res.data : [];
         const normalized = raw
           .map(e => {
@@ -102,7 +101,7 @@ function AppContent() {
 
     if (isAuthenticated) {
       loadUsers();
-      // Only admins or HR should hit /api/employees to avoid 403s for clients
+      // Only admins or HR should load employees list
       const role = (user?.role || '').toLowerCase();
       if (role === 'admin' || role === 'hr') {
         loadEmployees();
@@ -115,7 +114,7 @@ function AppContent() {
   // Stable callback to refresh agents on demand (used by Leads toolbar)
   const refetchAgents = useCallback(async () => {
     try {
-      const res = await payrollAPI.getEmployees();
+      const res = await employeesAPI.getAll();
       const raw = Array.isArray(res?.data) ? res.data : [];
       const normalized = raw
         .map(e => {

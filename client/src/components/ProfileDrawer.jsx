@@ -6,7 +6,7 @@ import { meAPI } from '../utils/supabaseServices';
 
 const getExtras = (userId) => {
   try {
-    const raw = localStorage.getItem('vibe_profile_extras');
+    const raw = localStorage.getItem('eron_profile_extras');
     const map = raw ? JSON.parse(raw) : {};
     return map[userId] || { username: '', phone: '', avatar: '' };
   } catch {
@@ -16,10 +16,10 @@ const getExtras = (userId) => {
 
 const setExtras = (userId, extras) => {
   try {
-    const raw = localStorage.getItem('vibe_profile_extras');
+    const raw = localStorage.getItem('eron_profile_extras');
     const map = raw ? JSON.parse(raw) : {};
     map[userId] = extras;
-    localStorage.setItem('vibe_profile_extras', JSON.stringify(map));
+    localStorage.setItem('eron_profile_extras', JSON.stringify(map));
   } catch { }
 };
 
@@ -59,14 +59,14 @@ const ProfileDrawer = ({ user, onClose, onUpdate }) => {
         const updated = res?.data || { ...user, name: formData.name, email: formData.email };
         // Persist in auth context/localStorage so it survives reloads
         if (updated) {
-          try { window.dispatchEvent(new Event('vibe_profile_update')); } catch {}
+          try { window.dispatchEvent(new Event('eron_profile_update')); } catch {}
           // Switch user in AuthContext
           // Avoid circular import by calling onUpdate if provided; also directly patch localStorage
           try {
-            const localRaw = localStorage.getItem('vibe_user');
+            const localRaw = localStorage.getItem('eron_user');
             const localUser = localRaw ? JSON.parse(localRaw) : user;
             const nextUser = { ...localUser, name: updated.name || formData.name, email: updated.email || formData.email };
-            localStorage.setItem('vibe_user', JSON.stringify(nextUser));
+            localStorage.setItem('eron_user', JSON.stringify(nextUser));
           } catch {}
           // Inform parent to refresh auth context (updates TopBar and others immediately)
           if (onUpdate) {

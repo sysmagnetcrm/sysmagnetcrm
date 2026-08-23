@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Toast from './Toast';
+import { candidatesAPI, employeesAPI } from '../utils/supabaseServices';
 
 const HRManagement = () => {
   const [activeTab, setActiveTab] = useState('hiring');
@@ -14,32 +15,11 @@ const HRManagement = () => {
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-  useEffect(() => {
-    if (activeTab === 'hiring') {
-      fetchCandidates();
-    } else if (activeTab === 'employees') {
-      fetchEmployees();
-    }
-  }, [activeTab, filterStatus]);
-
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('vibe_token');
-      let url = `${API_URL}/hr/hiring`;
-      if (filterStatus) url += `?status=${filterStatus}`;
-
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch candidates');
-      const data = await response.json();
-      setCandidates(data);
+      const res = await candidatesAPI.getAll({ status: filterStatus });
+      setCandidates(res.data || []);
     } catch (error) {
       addToast('Failed to fetch candidates', 'error');
     } finally {
@@ -50,16 +30,8 @@ const HRManagement = () => {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('vibe_token');
-      const response = await fetch(`${API_URL}/employees`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch employees');
-      const data = await response.json();
-      setEmployees(Array.isArray(data) ? data : (data.data || []));
+      const res = await employeesAPI.getAll();
+      setEmployees(res.data || []);
     } catch (error) {
       addToast('Failed to fetch employees', 'error');
     } finally {
@@ -69,16 +41,7 @@ const HRManagement = () => {
 
   const handleAddEmployee = async (emp) => {
     try {
-      const token = localStorage.getItem('vibe_token');
-      const res = await fetch(`${API_URL}/employees`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(emp)
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to add employee');
-      }
+      await employeesAPI.create(emp);
       addToast('Employee added');
       setShowAddEmployee(false);
       fetchEmployees();
@@ -90,19 +53,7 @@ const HRManagement = () => {
   const handleDeleteEmployee = async (employeeId) => {
     if (!window.confirm('Are you sure you want to remove this employee?')) return;
     try {
-      const token = localStorage.getItem('vibe_token');
-      const response = await fetch(`${API_URL}/employees/${employeeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to delete employee');
-      }
-
+      await employeesAPI.delete(employeeId);
       addToast('Employee removed successfully');
       fetchEmployees();
     } catch (error) {
@@ -120,17 +71,7 @@ const HRManagement = () => {
 
   const handleAddCandidate = async (candidateData) => {
     try {
-      const token = localStorage.getItem('vibe_token');
-      const response = await fetch(`${API_URL}/hr/hiring`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(candidateData)
-      });
-
-      if (!response.ok) throw new Error('Failed to add candidate');
+      await candidatesAPI.create(candidateData);
       addToast('Candidate added successfully');
       setShowAddModal(false);
       fetchCandidates();
@@ -141,17 +82,7 @@ const HRManagement = () => {
 
   const handleUpdateCandidate = async (id, updates) => {
     try {
-      const token = localStorage.getItem('vibe_token');
-      const response = await fetch(`${API_URL}/hr/hiring/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updates)
-      });
-
-      if (!response.ok) throw new Error('Failed to update candidate');
+      await candidatesAPI.update(id, updates);
       addToast('Candidate updated successfully');
       setEditingCandidate(null);
       fetchCandidates();
@@ -162,17 +93,8 @@ const HRManagement = () => {
 
   const handleDeleteCandidate = async (id) => {
     if (!window.confirm('Are you sure you want to delete this candidate?')) return;
-
     try {
-      const token = localStorage.getItem('vibe_token');
-      const response = await fetch(`${API_URL}/hr/hiring/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to delete candidate');
+      await candidatesAPI.delete(id);
       addToast('Candidate deleted successfully');
       fetchCandidates();
     } catch (error) {

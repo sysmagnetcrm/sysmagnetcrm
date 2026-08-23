@@ -1,7 +1,7 @@
 {
-  "name": "vibe-crm-server",
+  "name": "eron-crm-server",
   "version": "1.0.0",
-  "description": "Vibe CRM Backend Server",
+  "description": "Eron-CRM Backend Server",
   "main": "server.supabase.js",
   "scripts": {
     "start": "node server.supabase.js",
@@ -30,6 +30,6 @@
     "cross-env": "^7.0.3"
   },
   "keywords": ["crm", "backend", "api"],
-  "author": "Vibe CRM Team",
+  "author": "Eron-CRM Team",
   "license": "MIT"
 }

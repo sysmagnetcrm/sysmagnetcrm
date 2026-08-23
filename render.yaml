@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: eron-crm
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://phmwijxrqrzykfcaljwm.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBobXdpanhycXJ6eWtmY2FsandtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MDkwMzgsImV4cCI6MjEwMzA4NTAzOH0.x1OT8Kn5l7B-VEFTi1M-QF_4h3MGI9e87FzMGp_yHR4

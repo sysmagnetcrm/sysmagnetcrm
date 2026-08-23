@@ -1,4 +1,4 @@
-# Vibe CRM – VPS Deployment Guide (Supabase-only)
+# Eron-CRM – VPS Deployment Guide (Supabase-only)
 
 This guide describes how to deploy the Supabase-backed server and React client to a VPS using PM2 and Nginx with HTTPS.
 
@@ -48,7 +48,7 @@ pm2 startup  # follow instructions to enable on boot
 To set env variables securely without committing, use PM2 runtime env:
 
 ```
-pm2 set pm2:vibe-crm:SUPABASE_URL https://YOUR-PROJECT.supabase.co
+pm2 set pm2:eron-crm:SUPABASE_URL https://YOUR-PROJECT.supabase.co
 # ... repeat for other keys ...
 ```
 
@@ -77,8 +77,8 @@ Create a server block using `deploy/nginx-example.conf` as a reference. Key poin
 Enable the site:
 
 ```
-sudo ln -s /path/to/deploy/nginx-example.conf /etc/nginx/sites-available/vibe-crm
-sudo ln -s /etc/nginx/sites-available/vibe-crm /etc/nginx/sites-enabled/vibe-crm
+sudo ln -s /path/to/deploy/nginx-example.conf /etc/nginx/sites-available/eron-crm
+sudo ln -s /etc/nginx/sites-available/eron-crm /etc/nginx/sites-enabled/eron-crm
 sudo nginx -t
 sudo systemctl reload nginx
 ```
