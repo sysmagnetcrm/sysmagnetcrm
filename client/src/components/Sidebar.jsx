@@ -16,7 +16,7 @@ const Sidebar = ({
   // Navigation Items Grouped by Categories
   const navigationGroups = [
     {
-      title: null, // Overview group (always visible, no collapsible accordion header)
+      title: null, // Overview group (always visible at top)
       items: [
         { id: 'dashboard', label: 'Overview', icon: 'heroicons:squares-2x2', roles: ['admin', 'sales', 'developer', 'hr', 'finance', 'client', 'digital_marketer'] },
       ]
@@ -34,7 +34,7 @@ const Sidebar = ({
       items: [
         { id: 'tasks', label: 'Tasks', icon: 'heroicons:clipboard-document-check', roles: ['admin', 'sales', 'developer', 'hr', 'digital_marketer'] },
         { id: 'admin_tasks', label: 'Projects', icon: 'heroicons:folder-open', roles: ['admin', 'developer'] },
-        { id: 'qa', label: 'QA', icon: 'heroicons:check-badge', roles: ['admin', 'developer'] },
+        { id: 'qa', label: 'QA', icon: 'heroicons:shield-check', roles: ['admin', 'developer'] },
         { id: 'automation', label: 'Automation', icon: 'heroicons:bolt', roles: ['admin', 'developer'] },
       ]
     },
@@ -69,11 +69,10 @@ const Sidebar = ({
     }
   ];
 
-  // State to track open/collapsed accordion categories
+  // State to track accordion open/collapsed sections
   const [collapsedCategories, setCollapsedCategories] = useState({});
-  const [hoveredItem, setHoveredItem] = useState(null);
 
-  // Auto-expand category containing active panel, ensure it stays open
+  // Rule: Auto-expand section containing current active page, preserve open state
   useEffect(() => {
     navigationGroups.forEach((group) => {
       if (group.title && group.items.some(item => item.id === panel)) {
@@ -90,7 +89,7 @@ const Sidebar = ({
     const group = navigationGroups.find(g => g.title === categoryTitle);
     const containsActive = group?.items.some(item => item.id === panel);
 
-    // Don't collapse if active page is inside this category
+    // Rule: Do NOT allow active category to collapse if current active page is inside it
     if (containsActive && !collapsedCategories[categoryTitle]) {
       return;
     }
@@ -103,7 +102,6 @@ const Sidebar = ({
 
   const handleNavClick = (itemId) => {
     setPanel(itemId);
-    // On mobile, close sidebar after clicking nav item
     if (window.innerWidth < 1024) {
       setSidebarOpen(false);
     }
@@ -120,59 +118,58 @@ const Sidebar = ({
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container: 240px expanded, 68px collapsed */}
       <aside
-        className={`fixed lg:static top-0 left-0 bottom-0 z-40 bg-white border-r border-[#E5E7EB] flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
-          // Mobile state vs Desktop state
+        className={`fixed lg:static top-0 left-0 bottom-0 z-40 bg-white border-r border-[#E4E7EC] flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${
-          isCollapsed ? 'lg:w-16' : 'lg:w-60'
-        } w-60`}
+          isCollapsed ? 'lg:w-[68px]' : 'lg:w-[240px]'
+        } w-[240px]`}
       >
-        {/* Brand Header */}
-        <div className={`h-16 px-4 flex items-center border-b border-[#E5E7EB] ${
+        {/* Brand Header & Toggle */}
+        <div className={`h-16 px-4 flex items-center border-b border-[#E4E7EC] ${
           isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'
         }`}>
           {isCollapsed ? (
-            /* Collapsed State Header */
+            /* Collapsed Header */
             <div className="hidden lg:flex flex-col items-center gap-1.5 py-1">
-              <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base shadow-subtle">
+              <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base">
                 E
               </div>
               <button
                 onClick={() => setIsCollapsed(false)}
-                className="group relative p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="group relative p-1 text-[#667085] hover:text-[#111827] hover:bg-[#F2F4F7] rounded-[6px] transition-colors"
                 title="Expand sidebar"
                 aria-label="Expand sidebar"
               >
                 <Icon icon="heroicons:chevron-double-right" className="w-4 h-4" />
-                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-[11px] font-medium rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#111827] text-white text-xs font-medium rounded-[6px] shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
                   Expand sidebar ( › )
                 </span>
               </button>
             </div>
           ) : (
-            /* Expanded State Header */
+            /* Expanded Header */
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-lg shadow-subtle shrink-0">
+                <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base shrink-0">
                   E
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-gray-900 text-base leading-tight tracking-tight truncate">Eron-CRM</span>
-                  <span className="text-[10px] text-gray-400 font-medium tracking-wide truncate">ENTERPRISE SaaS</span>
+                  <span className="font-bold text-[#111827] text-base leading-tight tracking-tight truncate">Eron-CRM</span>
+                  <span className="text-[10px] text-[#98A2B3] font-medium tracking-wide truncate uppercase">ENTERPRISE SaaS</span>
                 </div>
               </div>
 
-              {/* Desktop Collapse Button */}
+              {/* Desktop Collapse Toggle */}
               <button
                 onClick={() => setIsCollapsed(true)}
-                className="hidden lg:flex p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group relative"
+                className="hidden lg:flex p-1.5 text-[#667085] hover:text-[#111827] hover:bg-[#F2F4F7] rounded-[6px] transition-colors group relative"
                 title="Collapse sidebar"
                 aria-label="Collapse sidebar"
               >
                 <Icon icon="heroicons:chevron-double-left" className="w-4 h-4" />
-                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-[11px] font-medium rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+                <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#111827] text-white text-xs font-medium rounded-[6px] shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
                   Collapse sidebar ( ‹ )
                 </span>
               </button>
@@ -182,7 +179,7 @@ const Sidebar = ({
           {/* Mobile Close Button */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-gray-600 p-1 rounded-lg"
+            className="lg:hidden text-[#667085] hover:text-[#111827] p-1 rounded-lg"
             aria-label="Close sidebar"
           >
             <Icon icon="heroicons:x-mark" className="w-5 h-5" />
@@ -190,9 +187,8 @@ const Sidebar = ({
         </div>
 
         {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-2 py-4 space-y-3">
           {navigationGroups.map((group, gIdx) => {
-            // Filter items permitted for user role
             const allowedItems = group.items.filter(item => item.roles.includes(role));
             if (allowedItems.length === 0) return null;
 
@@ -201,15 +197,14 @@ const Sidebar = ({
 
             return (
               <div key={gIdx} className="space-y-1">
-                {/* Category Header (Shown in Expanded State or Mobile) */}
+                {/* Category Header */}
                 {group.title && (
                   <div className={isCollapsed ? 'hidden lg:block' : ''}>
-                    {/* Expanded Category Header */}
                     <button
                       onClick={() => toggleCategory(group.title)}
                       disabled={containsActive && !isGroupCollapsed}
-                      className={`w-full flex items-center justify-between px-2.5 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider transition-colors group ${
-                        containsActive ? 'cursor-default text-orange-600/80 font-bold' : 'hover:text-gray-700 cursor-pointer'
+                      className={`w-full flex items-center justify-between px-2.5 py-1 text-[11px] font-semibold text-[#98A2B3] uppercase tracking-wider transition-colors group ${
+                        containsActive ? 'cursor-default text-[#D96F0B] font-bold' : 'hover:text-[#344054] cursor-pointer'
                       } ${isCollapsed ? 'lg:hidden' : ''}`}
                     >
                       <span className="truncate">{group.title}</span>
@@ -219,14 +214,14 @@ const Sidebar = ({
                       />
                     </button>
 
-                    {/* Collapsed Category Divider Line */}
+                    {/* Divider line in collapsed mode */}
                     {isCollapsed && (
-                      <div className="hidden lg:block my-2 border-t border-gray-100" />
+                      <div className="hidden lg:block my-2 border-t border-[#E4E7EC]" />
                     )}
                   </div>
                 )}
 
-                {/* Items List (Hide if category accordion is collapsed in expanded mode) */}
+                {/* Child Menu Items */}
                 {(!isGroupCollapsed || isCollapsed) && (
                   <div className="space-y-1">
                     {allowedItems.map((item) => {
@@ -235,30 +230,28 @@ const Sidebar = ({
                         <div key={item.id} className="relative group/item">
                           <button
                             onClick={() => handleNavClick(item.id)}
-                            onMouseEnter={() => setHoveredItem(item.id)}
-                            onMouseLeave={() => setHoveredItem(null)}
                             className={`w-full flex items-center ${
                               isCollapsed ? 'lg:justify-center justify-start px-2.5' : 'px-3'
-                            } py-2 rounded-[8px] text-sm font-medium transition-all ${
+                            } py-2 rounded-[8px] text-xs font-medium transition-all ${
                               isActive
-                                ? 'bg-orange-50 text-[#FF8A1F] font-semibold border-l-4 border-[#FF8A1F]'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                ? 'bg-[#FFF4E8] text-[#D96F0B] font-semibold border-l-[3px] border-[#FF8A1F]'
+                                : 'text-[#344054] hover:text-[#111827] hover:bg-[#F9FAFB]'
                             }`}
                           >
                             <Icon
                               icon={item.icon}
-                              className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#FF8A1F]' : 'text-gray-400 group-hover/item:text-gray-700'}`}
+                              className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#FF8A1F]' : 'text-[#667085] group-hover/item:text-[#111827]'}`}
                             />
                             <span className={`truncate ml-3 ${isCollapsed ? 'lg:hidden' : ''}`}>
                               {item.label}
                             </span>
                           </button>
 
-                          {/* Floating Tooltip Popover (Visible in Collapsed Desktop State) */}
+                          {/* Hover Tooltip in Collapsed Desktop Mode */}
                           {isCollapsed && (
-                            <div className="hidden lg:group-hover/item:flex absolute left-full ml-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-gray-900 text-white text-xs font-semibold rounded-md shadow-lg z-50 whitespace-nowrap pointer-events-none items-center gap-1.5 animate-fade-fast">
+                            <div className="hidden lg:group-hover/item:flex absolute left-full ml-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#111827] text-white text-xs font-medium rounded-[6px] shadow-lg z-50 whitespace-nowrap pointer-events-none items-center gap-1.5 animate-fade-fast">
                               <span>{item.label}</span>
-                              {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A1F]"></span>}
+                              {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A1F]" />}
                             </div>
                           )}
                         </div>
@@ -271,18 +264,18 @@ const Sidebar = ({
           })}
         </div>
 
-        {/* User Info Footer */}
-        <div className="p-2.5 border-t border-[#E5E7EB] bg-gray-50/50">
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'lg:justify-center px-1' : 'px-2'} py-1.5`}>
-            <div className="w-8 h-8 rounded-full bg-orange-100 text-[#FF8A1F] font-semibold flex items-center justify-center text-xs shrink-0 border border-orange-200">
-              {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+        {/* User Profile Footer */}
+        <div className="p-2.5 border-t border-[#E4E7EC] bg-[#F9FAFB]/50">
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'lg:justify-center px-1' : 'px-2'} py-1`}>
+            <div className="w-7 h-7 rounded-full bg-orange-100 text-[#FF8A1F] font-bold flex items-center justify-center text-xs shrink-0 border border-orange-200">
+              {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-900 truncate">
-                  {user?.name || user?.email?.split('@')[0] || 'User'}
+                <p className="text-xs font-semibold text-[#111827] truncate">
+                  {user?.name || 'Admin'}
                 </p>
-                <p className="text-[11px] text-gray-500 capitalize truncate font-medium">
+                <p className="text-[11px] text-[#667085] capitalize truncate font-medium">
                   {role}
                 </p>
               </div>

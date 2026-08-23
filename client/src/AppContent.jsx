@@ -573,7 +573,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#F7F8FA] text-gray-900 font-sans flex flex-col">
+    <div className="min-h-screen w-full bg-[#F8F9FB] text-[#111827] font-sans flex flex-col">
       <Toast toasts={toasts} remove={removeToast} />
 
       <div className="flex-1 flex w-full">

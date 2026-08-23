@@ -109,7 +109,7 @@ const TopBar = ({
     profile: 'Profile & Settings',
   };
 
-  // User display name format
+  // User display name format (never show raw email address in top bar button)
   const getDisplayName = () => {
     if (user?.name) return user.name;
     if (user?.email) {
@@ -137,18 +137,18 @@ const TopBar = ({
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-[#E5E7EB] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20">
+      <header className="h-16 bg-white border-b border-[#E4E7EC] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20">
         {/* Left: Mobile Sidebar Toggle & Page Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden text-gray-500 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="lg:hidden text-[#667085] hover:text-[#111827] p-1.5 rounded-[8px] hover:bg-[#F2F4F7] transition-colors"
             aria-label="Toggle Navigation"
           >
-            <Icon icon="heroicons:bars-3" className="w-6 h-6" />
+            <Icon icon="heroicons:bars-3" className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
+            <h1 className="text-base md:text-lg font-bold text-[#111827] leading-tight">
               {titlesMap[panel] || 'Overview'}
             </h1>
           </div>
@@ -158,13 +158,13 @@ const TopBar = ({
         <div className="hidden md:flex flex-1 max-w-md mx-6">
           <button
             onClick={() => setShowSearchModal(true)}
-            className="w-full flex items-center justify-between px-3.5 py-1.5 text-sm text-gray-400 bg-gray-50 border border-[#E5E7EB] rounded-[8px] hover:border-gray-300 hover:bg-white transition-all"
+            className="w-full flex items-center justify-between px-3.5 py-1.5 text-xs text-[#98A2B3] bg-[#F9FAFB] border border-[#E4E7EC] rounded-[8px] hover:border-gray-300 hover:bg-white transition-all"
           >
             <div className="flex items-center gap-2">
-              <Icon icon="heroicons:magnifying-glass" className="w-4 h-4 text-gray-400" />
+              <Icon icon="heroicons:magnifying-glass" className="w-4 h-4 text-[#98A2B3]" />
               <span>Search leads, clients, tasks...</span>
             </div>
-            <kbd className="px-1.5 py-0.5 text-[11px] font-semibold text-gray-500 bg-white border border-gray-200 rounded shadow-2xs">
+            <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-[#667085] bg-white border border-[#E4E7EC] rounded shadow-2xs">
               Ctrl K
             </kbd>
           </button>
@@ -175,7 +175,7 @@ const TopBar = ({
           {/* Mobile Search Icon Button */}
           <button
             onClick={() => setShowSearchModal(true)}
-            className="md:hidden p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+            className="md:hidden p-2 text-[#667085] hover:text-[#111827] rounded-[8px] hover:bg-[#F2F4F7]"
             aria-label="Search"
           >
             <Icon icon="heroicons:magnifying-glass" className="w-5 h-5" />
@@ -186,24 +186,24 @@ const TopBar = ({
             <div className="relative" ref={createDropdownRef}>
               <button
                 onClick={() => setShowCreateDropdown(prev => !prev)}
-                className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5 shadow-subtle"
+                className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1.5"
               >
-                <Icon icon="heroicons:plus" className="w-4 h-4" />
+                <Icon icon="heroicons:plus" className="w-3.5 h-3.5" />
                 <span className="font-semibold">Create</span>
-                <Icon icon="heroicons:chevron-down" className="w-3.5 h-3.5 opacity-80" />
+                <Icon icon="heroicons:chevron-down" className="w-3 h-3 opacity-80" />
               </button>
 
               {showCreateDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-[12px] border border-[#E5E7EB] shadow-dropdown z-50 py-1.5 animate-fade-fast">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 py-1 animate-fade-fast">
                   {canCreateLeads && (
                     <button
                       onClick={() => {
                         setShowCreateDropdown(false);
                         setPanel('leads');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF8A1F] flex items-center gap-2.5 transition-colors"
+                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] hover:bg-[#FFF4E8] hover:text-[#D96F0B] flex items-center gap-2.5 transition-colors"
                     >
-                      <Icon icon="heroicons:user-group" className="w-4 h-4 text-gray-400" />
+                      <Icon icon="heroicons:user-group" className="w-4 h-4 text-[#667085]" />
                       <span>New Lead</span>
                     </button>
                   )}
@@ -213,9 +213,9 @@ const TopBar = ({
                         setShowCreateDropdown(false);
                         setPanel('clients');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF8A1F] flex items-center gap-2.5 transition-colors"
+                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] hover:bg-[#FFF4E8] hover:text-[#D96F0B] flex items-center gap-2.5 transition-colors"
                     >
-                      <Icon icon="heroicons:building-office-2" className="w-4 h-4 text-gray-400" />
+                      <Icon icon="heroicons:building-office-2" className="w-4 h-4 text-[#667085]" />
                       <span>New Client</span>
                     </button>
                   )}
@@ -225,9 +225,9 @@ const TopBar = ({
                         setShowCreateDropdown(false);
                         onSelectTask && onSelectTask(null);
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF8A1F] flex items-center gap-2.5 transition-colors"
+                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] hover:bg-[#FFF4E8] hover:text-[#D96F0B] flex items-center gap-2.5 transition-colors"
                     >
-                      <Icon icon="heroicons:clipboard-document-check" className="w-4 h-4 text-gray-400" />
+                      <Icon icon="heroicons:clipboard-document-check" className="w-4 h-4 text-[#667085]" />
                       <span>New Task</span>
                     </button>
                   )}
@@ -237,9 +237,9 @@ const TopBar = ({
                         setShowCreateDropdown(false);
                         setPanel('payments');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF8A1F] flex items-center gap-2.5 transition-colors"
+                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] hover:bg-[#FFF4E8] hover:text-[#D96F0B] flex items-center gap-2.5 transition-colors"
                     >
-                      <Icon icon="heroicons:credit-card" className="w-4 h-4 text-gray-400" />
+                      <Icon icon="heroicons:credit-card" className="w-4 h-4 text-[#667085]" />
                       <span>Record Payment</span>
                     </button>
                   )}
@@ -252,7 +252,7 @@ const TopBar = ({
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setShowNotifications(prev => !prev)}
-              className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 relative transition-colors"
+              className="p-2 text-[#667085] hover:text-[#111827] rounded-[8px] hover:bg-[#F2F4F7] relative transition-colors"
               aria-label="Notifications"
             >
               <Icon icon="heroicons:bell" className="w-5 h-5" />
@@ -263,19 +263,19 @@ const TopBar = ({
 
             {/* Notifications Popover */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-[12px] border border-[#E5E7EB] shadow-dropdown z-50 p-4 animate-fade-fast">
-                <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 mb-2">
-                  <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Notifications</h4>
-                  <span className="text-[11px] font-semibold text-[#FF8A1F] bg-orange-50 px-2 py-0.5 rounded-full">{unreadCount} new</span>
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 p-4 animate-fade-fast">
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#E4E7EC] mb-2">
+                  <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider">Notifications</h4>
+                  <span className="text-[11px] font-semibold text-[#D96F0B] bg-[#FFF4E8] px-2 py-0.5 rounded-full">{unreadCount} new</span>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="text-xs text-gray-400 text-center py-6">No recent notifications</p>
+                    <p className="text-xs text-[#98A2B3] text-center py-6">No recent notifications</p>
                   ) : (
                     notifications.map((n) => (
-                      <div key={n.id} className="p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-xs transition-colors">
-                        <p className="font-semibold text-gray-900">{n.title}</p>
-                        <p className="text-gray-600 mt-0.5">{n.message}</p>
+                      <div key={n.id} className="p-2.5 rounded-[8px] bg-[#F9FAFB] hover:bg-[#F2F4F7] text-xs transition-colors">
+                        <p className="font-semibold text-[#111827]">{n.title}</p>
+                        <p className="text-[#667085] mt-0.5">{n.message}</p>
                       </div>
                     ))
                   )}
@@ -284,29 +284,29 @@ const TopBar = ({
             )}
           </div>
 
-          {/* Profile Dropdown */}
+          {/* Profile Menu Button */}
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(prev => !prev)}
-              className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-50 border border-transparent hover:border-[#E5E7EB] transition-all"
+              className="flex items-center gap-2 p-1 rounded-[8px] hover:bg-[#F9FAFB] border border-transparent hover:border-[#E4E7EC] transition-all"
             >
-              <div className="w-8 h-8 rounded-full bg-orange-100 text-[#FF8A1F] font-bold text-xs flex items-center justify-center border border-orange-200 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#FF8A1F] font-bold text-xs flex items-center justify-center border border-orange-200 shrink-0">
                 {getDisplayName().charAt(0).toUpperCase()}
               </div>
-              <span className="hidden sm:inline text-xs font-bold text-gray-800">
+              <span className="hidden sm:inline text-xs font-semibold text-[#111827]">
                 {getDisplayName()}
               </span>
-              <Icon icon="heroicons:chevron-down" className="w-3.5 h-3.5 text-gray-400" />
+              <Icon icon="heroicons:chevron-down" className="w-3.5 h-3.5 text-[#98A2B3]" />
             </button>
 
-            {/* Structured User Profile Dropdown */}
+            {/* Structured User Profile Dropdown Menu */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-[12px] border border-[#E5E7EB] shadow-dropdown z-50 py-2 animate-fade-fast">
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 py-2 animate-fade-fast">
                 {/* Header Profile Summary */}
-                <div className="px-4 py-2.5 border-b border-gray-100 mb-1">
-                  <p className="text-sm font-bold text-gray-900">{getDisplayName()}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email || 'admin@eron-crm.com'}</p>
-                  <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider text-orange-700 bg-orange-50 rounded uppercase border border-orange-200/60">
+                <div className="px-4 py-2.5 border-b border-[#E4E7EC] mb-1">
+                  <p className="text-sm font-bold text-[#111827]">{getDisplayName()}</p>
+                  <p className="text-xs text-[#667085] truncate">{user?.email || 'admin@sysdevcode.com'}</p>
+                  <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#D96F0B] bg-[#FFF4E8] rounded uppercase border border-[#FEDF89]/60">
                     Role: {user?.role || 'Admin'}
                   </span>
                 </div>
@@ -317,10 +317,32 @@ const TopBar = ({
                     setShowUserMenu(false);
                     onOpenProfile();
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-[#344054] hover:bg-[#F9FAFB] flex items-center gap-2.5 transition-colors"
                 >
-                  <Icon icon="heroicons:user" className="w-4 h-4 text-gray-400" />
-                  <span>Profile & Settings</span>
+                  <Icon icon="heroicons:user" className="w-4 h-4 text-[#667085]" />
+                  <span>Profile</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onOpenProfile();
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-[#344054] hover:bg-[#F9FAFB] flex items-center gap-2.5 transition-colors"
+                >
+                  <Icon icon="heroicons:cog-6-tooth" className="w-4 h-4 text-[#667085]" />
+                  <span>Preferences</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onOpenProfile();
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-medium text-[#344054] hover:bg-[#F9FAFB] flex items-center gap-2.5 transition-colors"
+                >
+                  <Icon icon="heroicons:shield-check" className="w-4 h-4 text-[#667085]" />
+                  <span>Security</span>
                 </button>
 
                 {usersList.length > 0 && (
@@ -329,14 +351,14 @@ const TopBar = ({
                       setShowUserMenu(false);
                       setShowRoleSwitcher(true);
                     }}
-                    className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+                    className="w-full text-left px-4 py-2 text-xs font-medium text-[#344054] hover:bg-[#F9FAFB] flex items-center gap-2.5 transition-colors"
                   >
-                    <Icon icon="heroicons:arrows-right-left" className="w-4 h-4 text-gray-400" />
+                    <Icon icon="heroicons:arrows-right-left" className="w-4 h-4 text-[#667085]" />
                     <span>Switch Role View</span>
                   </button>
                 )}
 
-                <div className="border-t border-gray-100 my-1" />
+                <div className="border-t border-[#E4E7EC] my-1" />
 
                 {/* Logout Button */}
                 <button
@@ -344,10 +366,10 @@ const TopBar = ({
                     setShowUserMenu(false);
                     logout();
                   }}
-                  className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5 font-semibold transition-colors"
+                  className="w-full text-left px-4 py-2 text-xs text-[#F04438] hover:bg-[#FEF3F2] flex items-center gap-2.5 font-semibold transition-colors"
                 >
-                  <Icon icon="heroicons:arrow-right-on-rectangle" className="w-4 h-4 text-red-500" />
-                  <span>Sign Out</span>
+                  <Icon icon="heroicons:arrow-right-on-rectangle" className="w-4 h-4 text-[#F04438]" />
+                  <span>Sign out</span>
                 </button>
               </div>
             )}
@@ -359,20 +381,20 @@ const TopBar = ({
       {showSearchModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
           <div className="drawer-backdrop" onClick={() => setShowSearchModal(false)} />
-          <div className="relative bg-white rounded-[16px] border border-[#E5E7EB] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
-            <div className="p-4 border-b border-[#E5E7EB] flex items-center gap-3">
-              <Icon icon="heroicons:magnifying-glass" className="w-5 h-5 text-gray-400 shrink-0" />
+          <div className="relative bg-white rounded-[16px] border border-[#E4E7EC] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
+            <div className="p-4 border-b border-[#E4E7EC] flex items-center gap-3">
+              <Icon icon="heroicons:magnifying-glass" className="w-5 h-5 text-[#98A2B3] shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search across leads, clients, tasks, candidates..."
-                className="w-full text-sm text-gray-900 placeholder-gray-400 bg-transparent focus:outline-none"
+                placeholder="Search leads, clients, tasks..."
+                className="w-full text-sm text-[#111827] placeholder-[#98A2B3] bg-transparent focus:outline-none"
               />
               <button
                 onClick={() => setShowSearchModal(false)}
-                className="text-[11px] font-semibold text-gray-500 hover:text-gray-700 px-2 py-1 rounded bg-gray-100"
+                className="text-[10px] font-semibold text-[#667085] hover:text-[#111827] px-2 py-1 rounded bg-[#F2F4F7]"
               >
                 ESC
               </button>
@@ -380,11 +402,11 @@ const TopBar = ({
 
             <div className="max-h-96 overflow-y-auto p-4 space-y-4">
               {!q ? (
-                <div className="text-center py-8 text-xs text-gray-400">
-                  Type to search across all CRM entities (Leads, Clients, Tasks)...
+                <div className="text-center py-8 text-xs text-[#98A2B3]">
+                  Search across Leads, Clients, Tasks, Employees, Tickets...
                 </div>
               ) : !hasResults ? (
-                <div className="text-center py-8 text-xs text-gray-500">
+                <div className="text-center py-8 text-xs text-[#667085]">
                   No matching records found for "{searchQuery}"
                 </div>
               ) : (
@@ -392,7 +414,7 @@ const TopBar = ({
                   {/* Leads */}
                   {searchResults.leads.length > 0 && (
                     <div>
-                      <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Leads ({searchResults.leads.length})</h4>
+                      <h4 className="text-[10px] font-bold text-[#98A2B3] uppercase tracking-wider mb-2">Leads ({searchResults.leads.length})</h4>
                       <div className="space-y-1">
                         {searchResults.leads.map(l => (
                           <div
@@ -401,9 +423,9 @@ const TopBar = ({
                               setShowSearchModal(false);
                               setPanel('leads');
                             }}
-                            className="p-2.5 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                            className="p-2.5 rounded-[8px] hover:bg-[#FFF4E8] cursor-pointer flex items-center justify-between text-xs transition-colors"
                           >
-                            <span className="font-semibold text-gray-900">{l.name}</span>
+                            <span className="font-semibold text-[#111827]">{l.name}</span>
                             <span className="badge badge-info">{l.status || 'New'}</span>
                           </div>
                         ))}
@@ -414,7 +436,7 @@ const TopBar = ({
                   {/* Clients */}
                   {searchResults.clients.length > 0 && (
                     <div>
-                      <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Clients ({searchResults.clients.length})</h4>
+                      <h4 className="text-[10px] font-bold text-[#98A2B3] uppercase tracking-wider mb-2">Clients ({searchResults.clients.length})</h4>
                       <div className="space-y-1">
                         {searchResults.clients.map(c => (
                           <div
@@ -423,10 +445,10 @@ const TopBar = ({
                               setShowSearchModal(false);
                               onSelectClient(c);
                             }}
-                            className="p-2.5 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                            className="p-2.5 rounded-[8px] hover:bg-[#FFF4E8] cursor-pointer flex items-center justify-between text-xs transition-colors"
                           >
-                            <span className="font-semibold text-gray-900">{c.name}</span>
-                            <span className="text-gray-500">{c.contact || c.status}</span>
+                            <span className="font-semibold text-[#111827]">{c.name}</span>
+                            <span className="text-[#667085]">{c.contact || c.status}</span>
                           </div>
                         ))}
                       </div>
@@ -436,7 +458,7 @@ const TopBar = ({
                   {/* Tasks */}
                   {searchResults.tasks.length > 0 && (
                     <div>
-                      <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Tasks ({searchResults.tasks.length})</h4>
+                      <h4 className="text-[10px] font-bold text-[#98A2B3] uppercase tracking-wider mb-2">Tasks ({searchResults.tasks.length})</h4>
                       <div className="space-y-1">
                         {searchResults.tasks.map(t => (
                           <div
@@ -445,9 +467,9 @@ const TopBar = ({
                               setShowSearchModal(false);
                               onSelectTask(t);
                             }}
-                            className="p-2.5 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
+                            className="p-2.5 rounded-[8px] hover:bg-[#FFF4E8] cursor-pointer flex items-center justify-between text-xs transition-colors"
                           >
-                            <span className="font-semibold text-gray-900">{t.title}</span>
+                            <span className="font-semibold text-[#111827]">{t.title}</span>
                             <span className="badge badge-warning">{t.status}</span>
                           </div>
                         ))}
@@ -465,9 +487,9 @@ const TopBar = ({
       {showRoleSwitcher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="drawer-backdrop" onClick={() => setShowRoleSwitcher(false)} />
-          <div className="relative bg-white rounded-[16px] border border-[#E5E7EB] shadow-modal w-full max-w-md p-6 z-50">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Select User Role Profile</h3>
-            <p className="text-xs text-gray-500 mb-4">Switch active user view to test role permissions.</p>
+          <div className="relative bg-white rounded-[16px] border border-[#E4E7EC] shadow-modal w-full max-w-md p-6 z-50">
+            <h3 className="text-base font-semibold text-[#111827] mb-1">Select User Role Profile</h3>
+            <p className="text-xs text-[#667085] mb-4">Switch active user view to test role permissions.</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {usersList.map((u) => (
                 <button
@@ -476,13 +498,13 @@ const TopBar = ({
                     switchUser(u);
                     setShowRoleSwitcher(false);
                   }}
-                  className="w-full p-2.5 text-left rounded-lg border border-gray-200 hover:border-[#FF8A1F] hover:bg-orange-50 flex items-center justify-between text-xs transition-all"
+                  className="w-full p-2.5 text-left rounded-[8px] border border-[#E4E7EC] hover:border-[#FF8A1F] hover:bg-[#FFF4E8] flex items-center justify-between text-xs transition-all"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900">{u.name || u.email}</p>
-                    <p className="text-[11px] text-gray-500">{u.email}</p>
+                    <p className="font-semibold text-[#111827]">{u.name || u.email}</p>
+                    <p className="text-[11px] text-[#667085]">{u.email}</p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 rounded uppercase">
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#F2F4F7] rounded uppercase">
                     {u.role || 'client'}
                   </span>
                 </button>
