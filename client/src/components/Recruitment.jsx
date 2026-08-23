@@ -105,7 +105,7 @@ const CandidateCard = ({ candidate, onSelect, onApprove, onScheduleInterview, on
           )}
           {onDelete && userRole === 'admin' && (
             <button
-              onClick={() => { if (window.confirm('Delete this candidate?')) onDelete(candidate.id); }}
+              onClick={() => onDelete(candidate.id)}
               className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
               title="Delete"
             >

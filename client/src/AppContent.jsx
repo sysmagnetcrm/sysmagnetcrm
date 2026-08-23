@@ -18,6 +18,7 @@ import Clients from './components/Clients';
 import Tasks from './components/Tasks';
 import Recruitment from './components/Recruitment';
 import Toast from './components/Toast';
+import MobileBottomNav from './components/MobileBottomNav';
 import ClientDrawer from './components/ClientDrawer';
 import TaskDrawer from './components/TaskDrawer';
 import CandidateDrawer from './components/CandidateDrawer';
@@ -558,24 +559,11 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen w-full relative text-brand-black dark:text-brand-white transition-colors">
-      {/* Themed Background Layer */}
-      <div
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={
-          theme === 'dark'
-            ? { background: 'radial-gradient(125% 125% at 50% 90%, #000000 40%, #0d1a36 100%)' }
-            : { background: 'radial-gradient(at 64% 78%, #496989 0%, transparent 60%), radial-gradient(at 9% 37%, #58a399 0%, transparent 50%), radial-gradient(at 15% 54%, #a8cd9f 0%, transparent 40%), radial-gradient(at 5% 45%, #e2f4c5 0%, transparent 30%)'
-            }
-        }
-      />
+    <div className="min-h-screen w-full bg-[#F7F8FA] text-gray-900 font-sans flex flex-col">
+      <Toast toasts={toasts} remove={removeToast} />
 
-      {/* Foreground App UI */}
-      <div className="relative z-10">
-        <Toast toasts={toasts} remove={removeToast} />
-
-        <div className="flex">
-        {/* Sidebar - works for both mobile and desktop */}
+      <div className="flex-1 flex w-full">
+        {/* Desktop & Tablet Sidebar */}
         <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -583,8 +571,8 @@ function AppContent() {
           setPanel={setPanel}
         />
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 pb-16 md:pb-0">
+        {/* Main Application Container */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 lg:pb-0">
           <TopBar
             panel={panel}
             searchQuery={searchQuery}
@@ -598,29 +586,33 @@ function AppContent() {
             onSelectClient={setSelectedClient}
             onSelectTask={setSelectedTask}
             onSelectCandidate={setSelectedCandidate}
-            onOpenProfile={() => {
-              console.log('AppContent: onOpenProfile called, setting profileOpen to true');
-              setProfileOpen(true);
-            }}
+            onOpenProfile={() => setProfileOpen(true)}
             onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           />
 
-          {/* Content Area */}
-          <div className="w-full max-w-7xl mx-auto">
+          {/* Main Content View */}
+          <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={panel}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
               >
                 {renderContent()}
               </motion.div>
             </AnimatePresence>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        panel={panel}
+        setPanel={setPanel}
+        onToggleSidebar={() => setSidebarOpen(true)}
+      />
 
       {/* Detail Drawers */}
       <AnimatePresence>
@@ -653,20 +645,15 @@ function AppContent() {
             userRole={user?.role}
           />
         )}
-      </AnimatePresence>
 
-      {/* Profile Drawer - OUTSIDE AnimatePresence for testing */}
-      {profileOpen && (
-        <ProfileDrawer
-          user={user}
-          onClose={() => {
-            console.log('AppContent: ProfileDrawer onClose called');
-            setProfileOpen(false);
-          }}
-          onUpdate={handleUpdateUser}
-        />
-      )}
-      </div>
+        {profileOpen && (
+          <ProfileDrawer
+            user={user}
+            onClose={() => setProfileOpen(false)}
+            onUpdate={handleUpdateUser}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

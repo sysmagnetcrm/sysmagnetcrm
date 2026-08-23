@@ -1,44 +1,38 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
 
-const tabs = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'mdi:view-dashboard-outline', roles: ['admin', 'sales', 'developer', 'finance', 'digital_marketer', 'support'] },
-  { key: 'leads', label: 'Leads', icon: 'mdi:account-box-outline', roles: ['admin', 'sales', 'digital_marketer'] },
-  { key: 'clients', label: 'Clients', icon: 'mdi:account-group-outline', roles: ['admin', 'sales', 'developer', 'support'] },
-  { key: 'sales', label: 'Sales', icon: 'mdi:briefcase-outline', roles: ['admin', 'sales'] },
-  { key: 'tasks', label: 'Tasks', icon: 'mdi:file-document-outline', roles: ['admin', 'sales', 'developer', 'support'] },
-  { key: 'payments', label: 'Payments', icon: 'mdi:currency-usd', roles: ['admin', 'finance'] },
-  { key: 'recruitment', label: 'Recruit', icon: 'mdi:calendar-account-outline', roles: ['admin', 'sales'] },
-  { key: 'users', label: 'Users', icon: 'mdi:account-cog-outline', roles: ['admin'] },
-];
-
-const MobileBottomNav = ({ panel, setPanel, userRole }) => {
-  const items = tabs.filter(t => t.roles.includes(userRole));
+const MobileBottomNav = ({ panel, setPanel, onToggleSidebar }) => {
+  const items = [
+    { id: 'dashboard', label: 'Home', icon: 'heroicons:squares-2x2' },
+    { id: 'leads', label: 'Leads', icon: 'heroicons:user-group' },
+    { id: 'clients', label: 'Clients', icon: 'heroicons:building-office-2' },
+    { id: 'tasks', label: 'Tasks', icon: 'heroicons:clipboard-document-check' },
+  ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-brand-grey/10 bg-white/95 dark:bg-brand-black/95 backdrop-blur-xl pb-safe">
-      <div className="grid grid-cols-5 h-16">
-        {items.slice(0, 5).map(({ key, label, icon }) => {
-          const isActive = panel === key;
-          return (
-            <button
-              key={key}
-              onClick={() => setPanel(key)}
-              className={`group relative flex flex-col items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ${isActive ? 'text-[#FE911E]' : 'text-brand-grey hover:text-brand-black dark:hover:text-brand-white'
-                }`}
-            >
-              <div className={`p-1.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#FE911E]/10 text-[#FE911E]' : 'bg-transparent'
-                }`}>
-                <Icon icon={icon} className="w-5 h-5" />
-              </div>
-              <span className="leading-none">{label}</span>
-              {isActive && (
-                <div className="absolute top-0 w-8 h-0.5 bg-[#FE911E] rounded-b-full" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#E5E7EB] z-30 lg:hidden flex items-center justify-around px-2 shadow-card">
+      {items.map((item) => {
+        const isActive = panel === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => setPanel(item.id)}
+            className={`flex flex-col items-center justify-center w-14 h-12 rounded-lg transition-colors ${
+              isActive ? 'text-[#FF8A1F] font-semibold' : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <Icon icon={item.icon} className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">{item.label}</span>
+          </button>
+        );
+      })}
+      <button
+        onClick={onToggleSidebar}
+        className="flex flex-col items-center justify-center w-14 h-12 rounded-lg text-gray-500 hover:text-gray-800"
+      >
+        <Icon icon="heroicons:ellipsis-horizontal" className="w-5 h-5 mb-0.5" />
+        <span className="text-[10px] tracking-tight">More</span>
+      </button>
     </nav>
   );
 };

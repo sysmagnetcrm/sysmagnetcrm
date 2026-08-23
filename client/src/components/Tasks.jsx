@@ -1,366 +1,302 @@
-import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import EmptyState from './EmptyState';
+import ConfirmDialog from './ConfirmDialog';
 
 const TaskCard = ({ task, onSelect, onMarkDone, onDelete, userRole }) => {
-  const getStatusColor = (status) => {
+  const getStatusBadge = (status) => {
     switch (status) {
-      case 'Done': return 'bg-green-100 text-green-700';
-      case 'In Progress': return 'bg-blue-100 text-blue-700';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700';
-      case 'Cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-brand-grey/10 text-brand-grey';
+      case 'Completed':
+      case 'Done':
+      case 'done': return 'badge-success';
+      case 'In Progress':
+      case 'in_progress': return 'badge-info';
+      case 'Pending': return 'badge-warning';
+      default: return 'badge-neutral';
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityBadge = (priority) => {
     switch (priority) {
-      case 'Urgent': return 'text-red-600 bg-red-50';
-      case 'High': return 'text-orange-600 bg-orange-50';
-      case 'Medium': return 'text-yellow-600 bg-yellow-50';
-      case 'Low': return 'text-green-600 bg-green-50';
-      default: return 'text-brand-grey bg-brand-grey/5';
+      case 'Urgent': return 'bg-red-50 text-red-700 border-red-200';
+      case 'High': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border-amber-200';
+      default: return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'Done';
+  const today = new Date().toISOString().split('T')[0];
+  const isOverdue = task.due_date && task.due_date < today && task.status !== 'Completed' && task.status !== 'done';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       onClick={() => onSelect(task)}
-      className={`p-4 rounded-xl shadow-sm border transition-all hover:shadow-md cursor-pointer group
-        ${isOverdue ? 'border-red-200 bg-red-50/50' : 'bg-white dark:bg-brand-grey/5 border-transparent hover:border-brand-orange/20'}`}
+      className={`saas-card p-4 saas-card-hover cursor-pointer flex flex-col justify-between ${
+        isOverdue ? 'border-red-200 bg-red-50/20' : ''
+      }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="font-bold text-brand-black dark:text-brand-white truncate text-sm">{task.title}</h3>
-        {isOverdue && <Icon icon="mdi:alert-circle" className="w-4 h-4 text-red-500 flex-shrink-0" />}
-      </div>
-
-      {task.description && (
-        <p className="text-xs text-brand-grey line-clamp-2 mb-3 leading-relaxed">{task.description}</p>
-      )}
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <span className="px-2 py-0.5 rounded-md bg-brand-grey/10 text-brand-grey text-[10px] font-bold uppercase tracking-wide">
-          {task.type}
-        </span>
-        {task.priority && (
-          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide ${getPriorityColor(task.priority)}`}>
-            {task.priority}
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between pt-3 border-t border-brand-grey/10">
-        <div className="flex items-center gap-2">
-          {task.assigned_user_name ? (
-            <div className="w-6 h-6 rounded-full bg-brand-orange/10 flex items-center justify-center text-brand-orange text-[10px] font-bold">
-              {task.assigned_user_name.charAt(0)}
-            </div>
-          ) : (
-            <div className="w-6 h-6 rounded-full bg-brand-grey/10 flex items-center justify-center text-brand-grey">
-              <Icon icon="mdi:account-question" className="w-3.5 h-3.5" />
-            </div>
-          )}
-          {task.due_date && (
-            <div className={`flex items-center gap-1 text-[10px] font-medium ${isOverdue ? 'text-red-500' : 'text-brand-grey'}`}>
-              <Icon icon="mdi:calendar" className="w-3 h-3" />
-              {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-            </div>
+      <div>
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="font-semibold text-gray-900 text-sm truncate" title={task.title}>{task.title}</h3>
+          {isOverdue && (
+            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200 shrink-0">
+              OVERDUE
+            </span>
           )}
         </div>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {userRole === 'developer' && task.status !== 'Done' && (
+        {task.description && (
+          <p className="text-xs text-gray-500 line-clamp-2 mb-3 leading-relaxed">{task.description}</p>
+        )}
+
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`badge ${getStatusBadge(task.status)}`}>
+            {task.status || 'Pending'}
+          </span>
+          {task.priority && (
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${getPriorityBadge(task.priority)}`}>
+              {task.priority}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-xs text-gray-500">
+        <div className="flex items-center gap-1.5">
+          <Icon icon="heroicons:calendar" className="w-3.5 h-3.5 text-gray-400" />
+          <span>{task.due_date || 'No due date'}</span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {onMarkDone && task.status !== 'Completed' && task.status !== 'done' && (
             <button
               onClick={(e) => { e.stopPropagation(); onMarkDone(task.id); }}
-              className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100"
-              title="Mark Done"
+              className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+              title="Mark Completed"
             >
-              <Icon icon="mdi:check" className="w-3.5 h-3.5" />
+              <Icon icon="heroicons:check-circle" className="w-4 h-4" />
             </button>
           )}
-          {onDelete && userRole === 'admin' && (
+          {onDelete && (userRole === 'admin' || userRole === 'hr') && (
             <button
-              onClick={(e) => { e.stopPropagation(); if (window.confirm('Delete?')) onDelete(task.id); }}
-              className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
-              title="Delete"
+              onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+              title="Delete Task"
             >
-              <Icon icon="mdi:trash-can-outline" className="w-3.5 h-3.5" />
+              <Icon icon="heroicons:trash" className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-const AddTaskModal = ({ isOpen, onClose, onSubmit, users }) => {
+const AddTaskDrawer = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'general',
-    assigned_to: '',
-    client_id: '',
+    status: 'Pending',
+    priority: 'Medium',
     due_date: '',
-    priority: 'Medium'
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    setFormData({ title: '', description: '', type: 'general', assigned_to: '', client_id: '', due_date: '', priority: 'Medium' });
+    setFormData({ title: '', description: '', status: 'Pending', priority: 'Medium', due_date: '' });
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="soft-card w-full max-w-md p-6 bg-white dark:bg-brand-black"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-brand-black dark:text-brand-white">Add New Task</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-brand-grey/10 text-brand-grey">
-            <Icon icon="mdi:close" className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="drawer-backdrop" onClick={onClose}></div>
+      <div className="relative bg-white w-full max-w-md h-full shadow-modal z-50 flex flex-col animate-fade-fast border-l border-[#E5E7EB]">
+        <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">Create New Task</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <Icon icon="heroicons:x-mark" className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           <div>
-            <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Title *</label>
+            <label className="saas-label" htmlFor="task-title">Task Title *</label>
             <input
+              id="task-title"
               type="text"
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="soft-input w-full"
-              placeholder="Task title"
+              className="saas-input"
+              placeholder="e.g. Follow up on Q3 proposal"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Description</label>
+            <label className="saas-label" htmlFor="task-desc">Description</label>
             <textarea
+              id="task-desc"
+              rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-              className="soft-input w-full resize-none"
-              placeholder="Details..."
+              className="saas-input"
+              placeholder="Details and action items..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Type</label>
+              <label className="saas-label" htmlFor="task-status">Status</label>
               <select
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="soft-input w-full"
+                id="task-status"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="saas-input"
               >
-                {['general', 'demo', 'challenge', 'interview'].map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Priority</label>
+              <label className="saas-label" htmlFor="task-priority">Priority</label>
               <select
+                id="task-priority"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="soft-input w-full"
+                className="saas-input"
               >
-                {['Low', 'Medium', 'High', 'Urgent'].map(p => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
               </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Assign To</label>
-              <select
-                value={formData.assigned_to}
-                onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                className="soft-input w-full"
-              >
-                <option value="">Unassigned</option>
-                {users
-                  .filter(u => (u.role || '').toLowerCase() !== 'client')
-                  .map(u => (
-                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
-                  ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-brand-grey mb-1.5 ml-1">Due Date</label>
-              <input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="soft-input w-full"
-              />
-            </div>
+          <div>
+            <label className="saas-label" htmlFor="task-due">Due Date</label>
+            <input
+              id="task-due"
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              className="saas-input"
+            />
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 soft-button bg-brand-grey/10 text-brand-black dark:text-brand-white hover:bg-brand-grey/20"
-            >
+          <div className="pt-4 flex gap-3 border-t border-gray-100">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">
               Cancel
             </button>
-            <button
-              type="submit"
-              className="flex-1 soft-button bg-brand-orange text-white hover:bg-brand-yellow/60"
-            >
-              Add Task
+            <button type="submit" className="btn-primary flex-1">
+              Create Task
             </button>
           </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 };
 
-const Tasks = ({ tasks, users, onSelect, onAssign, onMarkDone, onCreate, onDelete, userRole }) => {
-  const [showAddModal, setShowAddModal] = useState(false);
+const Tasks = ({ tasks = [], onSelect, onMarkDone, onCreateTask, searchQuery, userRole, onDelete }) => {
+  const [showAddDrawer, setShowAddDrawer] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterType, setFilterType] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesStatus = filterStatus === 'all' || task.status === filterStatus;
-    const matchesType = filterType === 'all' || task.type === filterType;
-    const matchesPriority = filterPriority === 'all' || (task.priority || '').toLowerCase() === filterPriority.toLowerCase();
-    return matchesStatus && matchesType && matchesPriority;
+  const list = Array.isArray(tasks) ? tasks : [];
+  const q = String(searchQuery || '').toLowerCase();
+
+  const filteredTasks = list.filter(t => {
+    const title = String(t?.title || '').toLowerCase();
+    const matchesSearch = title.includes(q);
+    const matchesStatus = filterStatus === 'all' || (t.status || 'Pending').toLowerCase() === filterStatus.toLowerCase();
+    return matchesSearch && matchesStatus;
   });
 
-  const groups = useMemo(() => {
-    const order = ['Pending', 'In Progress', 'Done', 'Cancelled'];
-    const map = order.reduce((acc, k) => { acc[k] = []; return acc; }, {});
-    filteredTasks.forEach(t => { (map[t.status] || (map[t.status] = [])).push(t); });
-    const dot = {
-      'Pending': 'bg-amber-500',
-      'In Progress': 'bg-blue-500',
-      'Done': 'bg-emerald-500',
-      'Cancelled': 'bg-slate-400'
-    };
-    return { order, map, dot };
-  }, [filteredTasks]);
-
-  const handleAddTask = async (taskData) => {
-    try {
-      if (onCreate) {
-        await onCreate(taskData);
-        setShowAddModal(false);
-      }
-    } catch (error) {
-      console.error('Error creating task:', error);
-    }
-  };
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 py-2">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-brand-black dark:text-brand-white">Tasks</h1>
-          <p className="text-brand-grey mt-1">
-            Track and manage your tasks and assignments
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Tasks</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Organize action items, deadlines, and project deliverables
           </p>
         </div>
-        {userRole !== 'developer' && (
+        <button onClick={() => setShowAddDrawer(true)} className="btn-primary text-xs flex items-center gap-1.5 self-start md:self-auto">
+          <Icon icon="heroicons:plus" className="w-4 h-4" />
+          <span>Create Task</span>
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#E5E7EB] pb-3 overflow-x-auto">
+        {['all', 'Pending', 'In Progress', 'Completed'].map(st => (
           <button
-            onClick={() => setShowAddModal(true)}
-            className="soft-button bg-brand-orange text-white hover:bg-brand-yellow/60 flex items-center gap-2"
+            key={st}
+            onClick={() => setFilterStatus(st)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-[8px] transition-all capitalize ${
+              filterStatus === st ? 'bg-[#FF8A1F] text-white shadow-subtle' : 'text-gray-600 hover:bg-gray-100'
+            }`}
           >
-            <Icon icon="mdi:plus" className="w-5 h-5" />
-            <span>Add Task</span>
+            {st === 'all' ? `All Tasks (${list.length})` : st}
           </button>
-        )}
+        ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-brand-grey/5 border border-brand-grey/10">
-          <Icon icon="mdi:filter-variant" className="w-5 h-5 text-brand-grey" />
-          <span className="text-sm font-bold text-brand-black dark:text-brand-white whitespace-nowrap">Filter:</span>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-transparent border-none text-sm font-medium text-brand-black dark:text-brand-white focus:ring-0 cursor-pointer">
-            <option value="all">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Done">Done</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div className="px-4 py-2 rounded-xl bg-white dark:bg-brand-grey/5 border border-brand-grey/10">
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="bg-transparent border-none text-sm font-medium text-brand-black dark:text-brand-white focus:ring-0 cursor-pointer">
-            <option value="all">All Types</option>
-            <option value="general">General</option>
-            <option value="demo">Demo</option>
-            <option value="challenge">Challenge</option>
-            <option value="interview">Interview</option>
-          </select>
-        </div>
-        <div className="px-4 py-2 rounded-xl bg-white dark:bg-brand-grey/5 border border-brand-grey/10">
-          <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} className="bg-transparent border-none text-sm font-medium text-brand-black dark:text-brand-white focus:ring-0 cursor-pointer">
-            <option value="all">All Priority</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Urgent">Urgent</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tasks Columns */}
+      {/* Tasks Grid */}
       {filteredTasks.length === 0 ? (
-        <div className="text-center py-20 soft-card">
-          <div className="w-20 h-20 mx-auto bg-brand-grey/5 rounded-full flex items-center justify-center text-brand-grey mb-4">
-            <Icon icon="mdi:clipboard-text-off-outline" className="w-10 h-10" />
-          </div>
-          <div className="text-lg font-bold text-brand-black dark:text-brand-white mb-1">No tasks found</div>
-          <div className="text-brand-grey">
-            Create your first task to get started
-          </div>
-        </div>
+        <EmptyState
+          icon="heroicons:clipboard-document-check"
+          title="No tasks found"
+          description={searchQuery ? `No tasks match "${searchQuery}".` : "You're all caught up! No tasks need your attention right now."}
+          actionLabel="Create Task"
+          onAction={() => setShowAddDrawer(true)}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-          {groups.order.map((status) => (
-            <div key={status} className="flex flex-col gap-4">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-block h-3 w-3 rounded-full ${groups.dot[status]} shadow-sm`}></span>
-                  <h3 className="font-bold text-brand-black dark:text-brand-white">{status}</h3>
-                </div>
-                <span className="text-xs font-bold px-2 py-1 rounded-lg bg-brand-grey/10 text-brand-grey">
-                  {groups.map[status]?.length || 0}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {(groups.map[status] || []).map((task) => (
-                  <TaskCard key={task.id} task={task} onSelect={onSelect} onMarkDone={onMarkDone} onDelete={onDelete} userRole={userRole} />
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredTasks.map((t) => (
+            <TaskCard
+              key={t.id}
+              task={t}
+              onSelect={onSelect}
+              onMarkDone={onMarkDone}
+              onDelete={(taskObj) => setTaskToDelete(taskObj)}
+              userRole={userRole}
+            />
           ))}
         </div>
       )}
 
-      {/* Add Task Modal */}
-      <AddTaskModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSubmit={handleAddTask}
-        users={users}
+      {/* Add Task Drawer */}
+      <AddTaskDrawer
+        isOpen={showAddDrawer}
+        onClose={() => setShowAddDrawer(false)}
+        onSubmit={(data) => {
+          if (onCreateTask) onCreateTask(data);
+          setShowAddDrawer(false);
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={!!taskToDelete}
+        title="Delete Task"
+        message={`Are you sure you want to delete task "${taskToDelete?.title}"?`}
+        confirmLabel="Delete Task"
+        isDanger={true}
+        onConfirm={() => {
+          if (taskToDelete && onDelete) {
+            onDelete(taskToDelete.id);
+          }
+          setTaskToDelete(null);
+        }}
+        onCancel={() => setTaskToDelete(null)}
       />
     </div>
   );

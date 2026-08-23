@@ -79,13 +79,11 @@ const PortalManager = () => {
   };
 
   const onDelete = async (id) => {
-    if (!window.confirm('Delete this update?')) return;
     try {
       await portalAPI.deleteUpdate(id);
       setUpdates(prev => prev.filter(u => String(u.id) !== String(id)));
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || 'Failed to delete update';
-      alert(msg);
+      console.error('Failed to delete update:', err);
     }
   };
 

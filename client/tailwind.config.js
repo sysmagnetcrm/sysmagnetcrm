@@ -7,75 +7,48 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-        colors: {
-          brand: {
-            black: '#1F1C19',
-            orange: '#FE911E',
-            white: '#F0F0F0',
-            grey: '#808080',
-            yellow: '#EAC23F',
-          },
-          primary: {
-            50: '#fff8ed',
-            100: '#ffefd5',
-            200: '#fedbb0',
-            300: '#fdbf8b',
-            400: '#fc9e5b',
-            500: '#FE911E', // Brand Orange
-            600: '#e0760d',
-            700: '#ba5a09',
-            800: '#95460e',
-            900: '#793a0f',
-            DEFAULT: '#FE911E',
-          },
-          secondary: {
-            DEFAULT: '#808080', // Brand Grey
-            50: '#f2f2f2',
-            100: '#e6e6e6',
-            200: '#cccccc',
-            300: '#b3b3b3',
-            400: '#999999',
-            500: '#808080',
-            600: '#666666',
-            700: '#4d4d4d',
-            800: '#333333',
-            900: '#1a1a1a',
-          },
-          dark: {
-            DEFAULT: '#1F1C19', // Brand Black
-            50: '#f4f4f4',
-            100: '#e8e8e8',
-            200: '#d1d1d1',
-            300: '#b9b9b9',
-            400: '#a2a2a2',
-            500: '#8b8b8b',
-            600: '#747474',
-            700: '#5d5d5d',
-            800: '#464646',
-            900: '#1F1C19',
-          }
+      colors: {
+        brand: {
+          orange: '#FF8A1F',
+          orangeHover: '#EA7712',
+          bg: '#F7F8FA',
+          surface: '#FFFFFF',
+          text: '#111827',
+          secondary: '#6B7280',
+          border: '#E5E7EB',
+          success: '#16A34A',
+          warning: '#D97706',
+          danger: '#DC2626',
+          info: '#2563EB',
         },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-in': 'slideIn 0.3s ease-out',
-        'bounce-in': 'bounceIn 0.6s ease-out',
+        primary: {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#FF8A1F', // Primary Orange
+          600: '#EA7712', // Primary Hover
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+          DEFAULT: '#FF8A1F',
+        },
       },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideIn: {
-          '0%': { transform: 'translateX(100%)' },
-          '100%': { transform: 'translateX(0)' },
-        },
-        bounceIn: {
-          '0%': { transform: 'scale(0.3)', opacity: '0' },
-          '50%': { transform: 'scale(1.05)' },
-          '70%': { transform: 'scale(0.9)' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        }
-      }
+      borderRadius: {
+        'sm': '8px',
+        'md': '10px',
+        'lg': '10px',
+        'xl': '12px',
+        '2xl': '16px',
+        '3xl': '20px',
+      },
+      boxShadow: {
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        'dropdown': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+      },
     },
   },
   plugins: [],

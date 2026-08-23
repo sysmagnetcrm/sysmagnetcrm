@@ -1,17 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { useAuth } from '../context/AuthContext';
 import { notificationsAPI } from '../utils/supabaseServices';
-
-const getExtras = (userId) => {
-  try {
-    const raw = localStorage.getItem('eron_profile_extras');
-    const map = raw ? JSON.parse(raw) : {};
-    return map[userId] || { username: '', phone: '', avatar: '' };
-  } catch {
-    return { username: '', phone: '', avatar: '' };
-  }
-};
 
 const TopBar = ({
   panel,
@@ -27,423 +17,383 @@ const TopBar = ({
   onSelectTask,
   onSelectCandidate,
   onOpenProfile,
-  onToggleSidebar
+  onToggleSidebar,
 }) => {
-  const { user } = useAuth();
+  const { user, logout, switchUser } = useAuth();
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notifLoading, setNotifLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [avatar, setAvatar] = useState('');
-  const unreadCount = notifications.length;
-  const btnRef = React.useRef(null);
-  const menuRef = React.useRef(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    const loadExtras = () => {
-      const extras = getExtras(user?.id);
-      setAvatar(extras.avatar || '');
-    };
+  const searchInputRef = useRef(null);
 
-    loadExtras();
-
-    // Listen for custom event for immediate updates
-    const handleProfileUpdate = () => loadExtras();
-    window.addEventListener('eron_profile_update', handleProfileUpdate);
-
-    // Also listen for storage events (cross-tab)
-    window.addEventListener('storage', handleProfileUpdate);
-
-    return () => {
-      window.removeEventListener('eron_profile_update', handleProfileUpdate);
-      window.removeEventListener('storage', handleProfileUpdate);
-    };
-  }, [user?.id]);
-
-  // Load notifications (unread) and poll
-  useEffect(() => {
-    let timer;
-    const load = async () => {
-      try {
-        setNotifLoading(true);
-        const res = await notificationsAPI.list({ only_unread: 1, limit: 10 });
-        setNotifications(Array.isArray(res.data) ? res.data : (res.data?.items || []));
-      } catch (e) {
-        // fail silently; server may return [] if table not present
-        setNotifications([]);
-      } finally {
-        setNotifLoading(false);
-      }
-    };
-    load();
-    // Poll faster so new notifications show up quickly
-    timer = setInterval(load, 15000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Refresh list when opening dropdown
-  useEffect(() => {
-    const loadIfOpen = async () => {
-      if (!notifOpen) return;
-      try {
-        setNotifLoading(true);
-        const res = await notificationsAPI.list({ only_unread: 1, limit: 10 });
-        setNotifications(Array.isArray(res.data) ? res.data : (res.data?.items || []));
-      } catch {
-        setNotifications([]);
-      } finally {
-        setNotifLoading(false);
-      }
-    };
-    loadIfOpen();
-  }, [notifOpen]);
-
-  // Refresh when window gains focus or tab becomes visible
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await notificationsAPI.list({ only_unread: 1, limit: 10 });
-        setNotifications(Array.isArray(res.data) ? res.data : (res.data?.items || []));
-      } catch {
-        setNotifications([]);
-      }
-    };
-    const onFocus = () => load();
-    const onVisibility = () => { if (document.visibilityState === 'visible') load(); };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, []);
-
-  // Close dropdown on outside click and Escape key
-  useEffect(() => {
-    const onDocClick = (e) => {
-      if (!notifOpen) return;
-      const btn = btnRef.current;
-      const menu = menuRef.current;
-      if (btn && btn.contains(e.target)) return;
-      if (menu && menu.contains(e.target)) return;
-      setNotifOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key === 'Escape') setNotifOpen(false);
-    };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [notifOpen]);
-
-  const markRead = async (id) => {
-    try {
-      await notificationsAPI.markRead(id);
-      setNotifications((prev) => prev.filter((n) => String(n.id) !== String(id)));
-    } catch { }
-  };
-
-  const markAllRead = async () => {
-    const ids = notifications.map((n) => n.id);
-    for (const id of ids) {
-      try { await notificationsAPI.markRead(id); } catch { }
-    }
-    setNotifications([]);
-  };
-
-  const suggestions = useMemo(() => {
-    const q = (searchQuery || '').trim().toLowerCase();
-    if (!q) return [];
-
-    const match = (txt) => (txt || '').toString().toLowerCase().includes(q);
-
-    const clientItems = clients
-      .filter(c => match(c.name) || match(c.contact) || match(c.email))
-      .slice(0, 5)
-      .map(c => ({ type: 'client', id: c.id, title: c.name, subtitle: c.contact || c.email }));
-
-    const taskItems = tasks
-      .filter(t => match(t.title) || match(t.description))
-      .slice(0, 5)
-      .map(t => ({ type: 'task', id: t.id, title: t.title, subtitle: t.status }));
-
-    const candidateItems = candidates
-      .filter(cd => match(cd.name) || match(cd.position))
-      .slice(0, 5)
-      .map(cd => ({ type: 'candidate', id: cd.id, title: cd.name, subtitle: cd.position }));
-
-    const leadItems = leads
-      .filter(l => match(l.name) || match(l.contact) || match(l.email))
-      .slice(0, 5)
-      .map(l => ({ type: 'lead', id: l.id, title: l.name, subtitle: l.source || l.email }));
-
-    const userItems = usersList
-      .filter(u => match(u.name) || match(u.email) || match(u.role))
-      .slice(0, 5)
-      .map(u => ({ type: 'user', id: u.id, title: u.name, subtitle: u.email }));
-
-    return [
-      ...clientItems,
-      ...taskItems,
-      ...candidateItems,
-      ...leadItems,
-      ...userItems
-    ].slice(0, 10);
-  }, [searchQuery, clients, tasks, candidates, leads, usersList]);
-
-  const handleSelectSuggestion = (item) => {
-    if (!item) return;
-    switch (item.type) {
-      case 'client':
-        setPanel && setPanel('clients');
-        onSelectClient && onSelectClient(clients.find(c => c.id === item.id) || null);
-        break;
-      case 'task':
-        setPanel && setPanel('tasks');
-        onSelectTask && onSelectTask(tasks.find(t => t.id === item.id) || null);
-        break;
-      case 'candidate':
-        setPanel && setPanel('recruitment');
-        onSelectCandidate && onSelectCandidate(candidates.find(cd => cd.id === item.id) || null);
-        break;
-      case 'lead':
-        setPanel && setPanel('leads');
-        break;
-      case 'user':
-        setPanel && setPanel('users');
-        break;
-      default:
-        break;
-    }
-    setShowSuggestions(false);
-  };
-
-  // Keyboard shortcut for search
+  // Keyboard shortcut Ctrl + K
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        const searchInput = document.getElementById('globalSearch');
-        if (searchInput) {
-          searchInput.focus();
-        }
+        setShowSearchModal(true);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const getPanelTitle = () => {
-    switch (panel) {
-      case 'dashboard':
-        return 'Overview';
-      case 'clients':
-        return 'Client Management';
-      case 'deals':
-        return 'Sales Pipeline';
-      case 'tasks':
-        return 'Task Board';
-      case 'recruitment':
-        return 'Recruitment';
-      default:
-        return panel.charAt(0).toUpperCase() + panel.slice(1);
+  // Fetch notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await notificationsAPI.getAll();
+        const list = res.data || [];
+        setNotifications(list);
+        setUnreadCount(list.filter(n => !n.is_read).length);
+      } catch (err) {
+        // Fallback gracefully
+        setNotifications([]);
+      }
+    };
+    if (user) {
+      fetchNotifications();
     }
+  }, [user]);
+
+  // Handle opening search modal
+  useEffect(() => {
+    if (showSearchModal && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [showSearchModal]);
+
+  // Page titles mapping
+  const titlesMap = {
+    dashboard: 'Overview',
+    leads: 'Sales Pipeline / Leads',
+    clients: 'Clients Directory',
+    payments: 'Payments & Financials',
+    tasks: 'Task Management',
+    admin_tasks: 'Projects Overview',
+    qa: 'Quality Assurance',
+    automation: 'Automation Runs',
+    employees: 'Employee Directory',
+    attendance: 'Attendance Tracking',
+    recruitment: 'Recruitment & Hiring',
+    payroll: 'Payroll Management',
+    portal_manager: 'Support Tickets',
+    client_portal: 'Client Portal',
+    reports: 'Analytics & Reports',
+    users: 'User Administration',
+    profile: 'Profile & Settings',
   };
 
+  // Grouped search results
+  const q = searchQuery.toLowerCase().trim();
+  const searchResults = {
+    leads: q ? leads.filter(l => (l.name || '').toLowerCase().includes(q) || (l.email || '').toLowerCase().includes(q)) : [],
+    clients: q ? clients.filter(c => (c.name || '').toLowerCase().includes(q) || (c.contact || '').toLowerCase().includes(q)) : [],
+    tasks: q ? tasks.filter(t => (t.title || '').toLowerCase().includes(q)) : [],
+    candidates: q ? candidates.filter(c => (c.name || '').toLowerCase().includes(q) || (c.position || '').toLowerCase().includes(q)) : [],
+  };
+
+  const hasResults = Object.values(searchResults).some(arr => arr.length > 0);
+
   return (
-    <div className="sticky top-4 z-30 px-4 mb-4">
-      <div className="h-16 rounded-3xl bg-white/90 dark:bg-brand-black/90 backdrop-blur-xl border border-white/20 shadow-sm flex items-center px-4 transition-all">
-        <div className="flex-1 flex items-center justify-between">
-          {/* Left side - Title and welcome */}
-          <div className="flex items-center gap-4">
+    <>
+      <header className="h-16 bg-white border-b border-[#E5E7EB] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20">
+        {/* Left: Mobile Toggle & Page Title */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onToggleSidebar}
+            className="lg:hidden text-gray-500 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100"
+            aria-label="Toggle Navigation"
+          >
+            <Icon icon="heroicons:bars-3" className="w-6 h-6" />
+          </button>
+          <div>
+            <h1 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">
+              {titlesMap[panel] || 'Eron-CRM'}
+            </h1>
+          </div>
+        </div>
+
+        {/* Center: Global Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6">
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="w-full flex items-center justify-between px-3.5 py-1.5 text-sm text-gray-400 bg-gray-50 border border-[#E5E7EB] rounded-[8px] hover:border-gray-300 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Icon icon="heroicons:magnifying-glass" className="w-4 h-4 text-gray-400" />
+              <span>Search leads, clients, tasks...</span>
+            </div>
+            <kbd className="px-1.5 py-0.5 text-[11px] font-semibold text-gray-500 bg-white border border-gray-200 rounded shadow-2xs">
+              Ctrl K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Right: Quick Controls & User Profile Dropdown */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile Search Button */}
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="md:hidden p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+            aria-label="Search"
+          >
+            <Icon icon="heroicons:magnifying-glass" className="w-5 h-5" />
+          </button>
+
+          {/* Notifications Button */}
+          <div className="relative">
             <button
-              type="button"
-              onClick={() => onToggleSidebar && onToggleSidebar()}
-              className="md:hidden p-2.5 rounded-xl bg-brand-grey/5 hover:bg-brand-grey/10 text-brand-black dark:text-brand-white transition-colors"
+              onClick={() => setShowNotifications(prev => !prev)}
+              className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 relative"
+              aria-label="Notifications"
             >
-              <Icon icon="mdi:menu" className="w-5 h-5" />
+              <Icon icon="heroicons:bell" className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF8A1F] rounded-full ring-2 ring-white"></span>
+              )}
             </button>
 
-            <div className="hidden md:block">
-              <h2 className="text-lg font-bold text-brand-black dark:text-brand-white tracking-tight">{getPanelTitle()}</h2>
-            </div>
+            {/* Notifications Popover */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-[12px] border border-[#E5E7EB] shadow-dropdown z-50 p-4 animate-fade-fast">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-2">
+                  <h4 className="text-sm font-semibold text-gray-900">Notifications</h4>
+                  <span className="text-xs text-gray-500">{unreadCount} new</span>
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-4">No recent notifications</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div key={n.id} className="p-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-xs transition-colors">
+                        <p className="font-semibold text-gray-900">{n.title}</p>
+                        <p className="text-gray-600 mt-0.5">{n.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right side - Search, notifications, user */}
-          <div className="flex items-center gap-4 md:gap-6">
-            {/* Global Search */}
-            <div className="relative hidden md:block group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon icon="mdi:magnify" className="w-5 h-5 text-brand-grey group-focus-within:text-brand-orange transition-colors" />
+          {/* User Menu Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(prev => !prev)}
+              className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-50 border border-transparent hover:border-[#E5E7EB] transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-orange-100 text-[#FF8A1F] font-bold text-xs flex items-center justify-center border border-orange-200">
+                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
               </div>
+              <span className="hidden sm:inline text-sm font-semibold text-gray-800">
+                {user?.name || user?.email?.split('@')[0] || 'User'}
+              </span>
+              <Icon icon="heroicons:chevron-down" className="w-4 h-4 text-gray-400" />
+            </button>
+
+            {/* User Dropdown Menu */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-[12px] border border-[#E5E7EB] shadow-dropdown z-50 py-2 animate-fade-fast">
+                {/* User Info Header */}
+                <div className="px-4 py-2.5 border-b border-gray-100 mb-1">
+                  <p className="text-sm font-semibold text-gray-900">{user?.name || 'Logged User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold tracking-wider text-orange-700 bg-orange-50 rounded uppercase">
+                    Role: {user?.role || 'Client'}
+                  </span>
+                </div>
+
+                {/* Profile Link */}
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onOpenProfile();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5"
+                >
+                  <Icon icon="heroicons:user" className="w-4 h-4 text-gray-400" />
+                  <span>Profile & Settings</span>
+                </button>
+
+                {/* Role Switcher Option (if users list exists) */}
+                {usersList.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setShowRoleSwitcher(true);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5"
+                  >
+                    <Icon icon="heroicons:arrows-right-left" className="w-4 h-4 text-gray-400" />
+                    <span>Switch Role View</span>
+                  </button>
+                )}
+
+                <div className="border-t border-gray-100 my-1"></div>
+
+                {/* Logout Button */}
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    logout();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2.5 font-medium"
+                >
+                  <Icon icon="heroicons:arrow-right-on-rectangle" className="w-4 h-4 text-red-500" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Global Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
+          <div className="drawer-backdrop" onClick={() => setShowSearchModal(false)}></div>
+          <div className="relative bg-white rounded-[16px] border border-[#E5E7EB] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
+            <div className="p-4 border-b border-[#E5E7EB] flex items-center gap-3">
+              <Icon icon="heroicons:magnifying-glass" className="w-5 h-5 text-gray-400" />
               <input
-                id="globalSearch"
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Search anything..."
-                className="pl-11 pr-12 py-3 w-64 lg:w-80 bg-brand-grey/5 hover:bg-brand-grey/10 focus:bg-white dark:focus:bg-brand-black rounded-2xl border border-transparent focus:border-brand-orange/20 focus:ring-4 focus:ring-brand-orange/5 text-sm font-medium transition-all"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search across leads, clients, tasks, candidates..."
+                className="w-full text-sm text-gray-900 placeholder-gray-400 bg-transparent focus:outline-none"
               />
-              <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                <span className="text-[10px] font-bold text-brand-grey/50 bg-white dark:bg-brand-black px-2 py-1 rounded-lg border border-brand-grey/10">⌘K</span>
-              </div>
-
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute mt-4 w-full bg-white dark:bg-brand-black rounded-2xl shadow-xl border border-brand-grey/10 overflow-hidden z-50">
-                  <ul className="max-h-80 overflow-auto py-2">
-                    {suggestions.map((s, idx) => (
-                      <li
-                        key={`${s.type}-${s.id}-${idx}`}
-                        className="px-4 py-3 cursor-pointer hover:bg-brand-grey/5 flex items-center gap-3 transition-colors"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => handleSelectSuggestion(s)}
-                      >
-                        <div className="p-2 rounded-full bg-brand-orange/10 text-brand-orange">
-                          <Icon icon={
-                            s.type === 'client' ? 'mdi:account' :
-                              s.type === 'task' ? 'mdi:checkbox-marked-circle-outline' :
-                                'mdi:circle-small'
-                          } className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-brand-black dark:text-brand-white">{s.title}</div>
-                          {s.subtitle && <div className="text-xs text-brand-grey">{s.subtitle}</div>}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <button
+                onClick={() => setShowSearchModal(false)}
+                className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded bg-gray-100"
+              >
+                ESC
+              </button>
             </div>
 
-            {/* Notifications */}
-            <div className="relative">
-              <button
-                ref={btnRef}
-                onClick={() => setNotifOpen((o) => !o)}
-                className={`relative p-3 rounded-2xl transition-all ${notifOpen ? 'bg-brand-orange/10 text-brand-orange' : 'bg-brand-grey/5 text-brand-grey hover:bg-brand-grey/10 hover:text-brand-black dark:hover:text-brand-white'}`}
-                title="Notifications"
-              >
-                <Icon icon={notifOpen ? "mdi:bell" : "mdi:bell-outline"} className="w-6 h-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-brand-black animate-pulse"></span>
-                )}
-              </button>
-              {notifOpen && (
+            <div className="max-h-96 overflow-y-auto p-4 space-y-4">
+              {!q ? (
+                <div className="text-center py-6 text-sm text-gray-400">
+                  Type to search across all CRM entities...
+                </div>
+              ) : !hasResults ? (
+                <div className="text-center py-6 text-sm text-gray-500">
+                  No matching records found for "{searchQuery}"
+                </div>
+              ) : (
                 <>
-                  {/* Mobile Backdrop */}
-                  <div
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
-                    onClick={() => setNotifOpen(false)}
-                  />
-
-                  {/* Dropdown / Modal */}
-                  <div
-                    ref={menuRef}
-                    className="fixed inset-x-4 top-24 bottom-auto max-h-[70vh] md:absolute md:inset-auto md:right-0 md:top-full md:mt-4 md:w-96 md:max-h-none bg-white dark:bg-brand-black rounded-3xl shadow-2xl md:shadow-xl border border-brand-grey/10 overflow-hidden z-50 flex flex-col origin-top-right animate-in fade-in zoom-in-95 duration-200"
-                  >
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-brand-grey/10 shrink-0 bg-white/50 dark:bg-brand-black/50 backdrop-blur-sm">
-                      <div className="font-bold text-base flex items-center gap-2">
-                        <span>Notifications</span>
-                        {unreadCount > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-brand-orange text-white text-[10px] font-bold shadow-sm shadow-brand-orange/20">
-                            {unreadCount} NEW
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={markAllRead} className="text-xs font-bold text-brand-grey hover:text-brand-orange transition-colors px-2 py-1 rounded-lg hover:bg-brand-orange/5">
-                          MARK ALL READ
-                        </button>
-                        <button
-                          onClick={() => setNotifOpen(false)}
-                          className="md:hidden p-1.5 rounded-full hover:bg-brand-grey/10 text-brand-grey transition-colors"
-                        >
-                          <Icon icon="mdi:close" className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="overflow-y-auto flex-1 md:max-h-[28rem] overscroll-contain p-2">
-                      {notifLoading && (
-                        <div className="p-8 text-center text-xs text-brand-grey flex flex-col items-center gap-3">
-                          <div className="w-10 h-10 rounded-full border-2 border-brand-grey/20 border-t-brand-orange animate-spin" />
-                          <span>Loading updates...</span>
-                        </div>
-                      )}
-                      {!notifLoading && notifications.length === 0 && (
-                        <div className="p-12 text-center flex flex-col items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-brand-grey/5 flex items-center justify-center text-brand-grey/30">
-                            <Icon icon="mdi:bell-sleep-outline" className="w-8 h-8" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-brand-black dark:text-brand-white">All caught up!</div>
-                            <div className="text-xs text-brand-grey mt-1">No new notifications at the moment.</div>
-                          </div>
-                        </div>
-                      )}
-                      {notifications.map((n) => (
-                        <div key={n.id} className="group p-3 rounded-2xl hover:bg-brand-grey/5 transition-all flex items-start gap-3 cursor-pointer relative mb-1">
-                          <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center shrink-0">
-                            <Icon icon="mdi:bell" className="w-5 h-5" />
-                          </div>
-                          <div className="flex-1 min-w-0 py-0.5">
-                            <div className="text-sm font-bold text-brand-black dark:text-brand-white truncate pr-8">{n.title || 'Notification'}</div>
-                            {n.message && <div className="text-xs text-brand-grey line-clamp-2 mt-0.5 leading-relaxed">{n.message}</div>}
-                            {n.created_at && (
-                              <div className="text-[10px] font-medium text-brand-grey/60 mt-2 flex items-center gap-1.5">
-                                <Icon icon="mdi:clock-outline" className="w-3 h-3" />
-                                {new Date(n.created_at).toLocaleString()}
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); markRead(n.id); }}
-                            className="absolute top-3 right-3 p-2 rounded-full text-brand-grey/40 hover:text-brand-orange hover:bg-white dark:hover:bg-brand-black shadow-sm opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100"
-                            title="Mark as read"
+                  {/* Leads Results */}
+                  {searchResults.leads.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Leads ({searchResults.leads.length})</h4>
+                      <div className="space-y-1">
+                        {searchResults.leads.map(l => (
+                          <div
+                            key={l.id}
+                            onClick={() => {
+                              setShowSearchModal(false);
+                              setPanel('leads');
+                            }}
+                            className="p-2 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-sm"
                           >
-                            <Icon icon="mdi:check" className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                            <span className="font-semibold text-gray-900">{l.name}</span>
+                            <span className="text-xs text-gray-500">{l.status || 'New'}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Clients Results */}
+                  {searchResults.clients.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Clients ({searchResults.clients.length})</h4>
+                      <div className="space-y-1">
+                        {searchResults.clients.map(c => (
+                          <div
+                            key={c.id}
+                            onClick={() => {
+                              setShowSearchModal(false);
+                              onSelectClient(c);
+                            }}
+                            className="p-2 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-sm"
+                          >
+                            <span className="font-semibold text-gray-900">{c.name}</span>
+                            <span className="text-xs text-gray-500">{c.contact || c.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tasks Results */}
+                  {searchResults.tasks.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase mb-2">Tasks ({searchResults.tasks.length})</h4>
+                      <div className="space-y-1">
+                        {searchResults.tasks.map(t => (
+                          <div
+                            key={t.id}
+                            onClick={() => {
+                              setShowSearchModal(false);
+                              onSelectTask(t);
+                            }}
+                            className="p-2 rounded-lg hover:bg-orange-50 cursor-pointer flex items-center justify-between text-sm"
+                          >
+                            <span className="font-semibold text-gray-900">{t.title}</span>
+                            <span className="text-xs text-gray-500">{t.status}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
 
-            {/* User Profile */}
-            <div
-              onClick={() => {
-                if (onOpenProfile) onOpenProfile();
-              }}
-              className="flex items-center gap-3 pl-3 md:pl-4 border-l border-brand-grey/10 cursor-pointer group"
-            >
-              <div className="text-right hidden md:block">
-                <div className="text-sm font-bold text-brand-black dark:text-brand-white group-hover:text-brand-orange transition-colors">{user?.name}</div>
-                <div className="text-[10px] font-bold text-brand-grey uppercase tracking-wider">{user?.role?.replace('_', ' ')}</div>
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-2xl bg-gradient-to-br from-brand-black to-brand-grey text-white flex items-center justify-center shadow-lg shadow-brand-black/10 group-hover:shadow-brand-orange/20 group-hover:scale-105 transition-all duration-300 overflow-hidden border-2 border-white dark:border-brand-black">
-                {avatar ? (
-                  <img src={avatar} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-lg font-bold">{user?.name?.charAt(0).toUpperCase() || 'U'}</span>
-                )}
-              </div>
+      {/* Role Switcher Modal (Dev / Admin feature) */}
+      {showRoleSwitcher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="drawer-backdrop" onClick={() => setShowRoleSwitcher(false)}></div>
+          <div className="relative bg-white rounded-[16px] border border-[#E5E7EB] shadow-modal w-full max-w-md p-6 z-50">
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Select User Role Profile</h3>
+            <p className="text-xs text-gray-500 mb-4">Switch active user view to test role permissions.</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {usersList.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => {
+                    switchUser(u);
+                    setShowRoleSwitcher(false);
+                  }}
+                  className="w-full p-2.5 text-left rounded-lg border border-gray-200 hover:border-[#FF8A1F] hover:bg-orange-50 flex items-center justify-between text-sm transition-all"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-900">{u.name || u.email}</p>
+                    <p className="text-xs text-gray-500">{u.email}</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 rounded capitalize">
+                    {u.role || 'client'}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 text-right">
+              <button onClick={() => setShowRoleSwitcher(false)} className="btn-secondary">
+                Close
+              </button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

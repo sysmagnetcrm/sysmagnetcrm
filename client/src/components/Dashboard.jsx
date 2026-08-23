@@ -1,217 +1,385 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import { useAuth } from '../context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
 import { useTasks } from '../hooks/useTasks';
-import { useAuth } from '../context/AuthContext';
+import { useLeads } from '../hooks/useLeads';
+import { useClients } from '../hooks/useClients';
+import { paymentsAPI, activitiesAPI } from '../utils/supabaseServices';
 
-const formatCompact = (n) => {
-  try {
-    return new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(n || 0));
-  } catch {
-    const num = Number(n || 0);
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return num.toLocaleString('en-IN');
-  }
-};
-
-const Dashboard = ({ onAddClient, onSelectTask }) => {
+const Dashboard = ({ onAddClient, onSelectTask, setPanel }) => {
   const { user } = useAuth();
-  const [range, setRange] = React.useState('month');
-  const [rangeOpen, setRangeOpen] = React.useState(false);
-  const { stats, loading: statsLoading } = useDashboard(range);
-  const { tasks, loading: tasksLoading } = useTasks({ limit: 5 });
+  const role = (user?.role || 'client').toLowerCase();
 
-  const pending = Number(stats?.pendingTasks || 0);
-  const totalClients = Number(stats?.totalClients || 0);
-  const walkIns = Number(stats?.walkIns || 0);
-  // Assuming we might have revenue in stats later, but for now we'll show what we have.
-  // If stats doesn't have revenue, we can either hide it or show 0.
-  const revenue = Number(stats?.revenue || 0);
+  const [timeframe, setTimeframe] = useState('30d');
+  const [payments, setPayments] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
-  const ranges = [
-    { id: 'today', label: 'Today' },
-    { id: 'week', label: 'This Week' },
-    { id: 'month', label: 'This Month' },
+  // Real Data Hooks
+  const { stats, loading: statsLoading } = useDashboard(timeframe);
+  const { tasks, loading: tasksLoading } = useTasks({}, true);
+  const leadsEnabled = ['admin', 'sales', 'digital_marketer'].includes(role);
+  const { leads, loading: leadsLoading } = useLeads({}, leadsEnabled);
+  const { clients, loading: clientsLoading } = useClients({}, true);
+
+  // Load Payments & Activities
+  useEffect(() => {
+    const loadExtraData = async () => {
+      setLoadingData(true);
+      try {
+        const [payRes, actRes] = await Promise.allSettled([
+          paymentsAPI.getAll(),
+          activitiesAPI.getAll(),
+        ]);
+
+        if (payRes.status === 'fulfilled') {
+          setPayments(payRes.value?.data || []);
+        }
+        if (actRes.status === 'fulfilled') {
+          setActivities(actRes.value?.data || []);
+        }
+      } catch (err) {
+        console.warn('Dashboard extra data load error:', err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    loadExtraData();
+  }, []);
+
+  // Time-of-day greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const displayName = user?.name || user?.email?.split('@')[0] || 'Team';
+
+  // Derived Metrics
+  const activeClientsCount = (clients || []).filter(c => c.status === 'Active').length;
+  const activeLeadsCount = (leads || []).filter(l => !['Won', 'Lost', 'Converted'].includes(l.status)).length;
+  const openTasksCount = (tasks || []).filter(t => t.status !== 'Completed' && t.status !== 'done').length;
+  const totalRevenue = (payments || []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  // Needs Attention Items
+  const today = new Date().toISOString().split('T')[0];
+  const overdueTasks = (tasks || []).filter(t => t.due_date && t.due_date < today && t.status !== 'Completed' && t.status !== 'done');
+  const overduePayments = (payments || []).filter(p => p.payment_status === 'Pending' && p.due_date && p.due_date < today);
+  const unassignedLeads = (leads || []).filter(l => !l.assigned_to && l.status === 'New');
+
+  const needsAttentionList = [
+    ...overdueTasks.map(t => ({ id: `task-${t.id}`, type: 'task', title: `Overdue Task: "${t.title}"`, subtitle: `Due ${t.due_date}`, action: () => onSelectTask && onSelectTask(t) })),
+    ...overduePayments.map(p => ({ id: `pay-${p.id}`, type: 'payment', title: `Overdue Payment: Invoice #${p.invoice_no || p.id.slice(0, 6)}`, subtitle: `Amount ₹${p.amount}`, action: () => setPanel && setPanel('payments') })),
+    ...unassignedLeads.map(l => ({ id: `lead-${l.id}`, type: 'lead', title: `New Unassigned Lead: "${l.name}"`, subtitle: l.company || l.email, action: () => setPanel && setPanel('leads') })),
   ];
 
-  if (statsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-orange"></div>
-      </div>
-    );
-  }
+  // Pipeline Stages Breakdown
+  const pipelineStages = ['New', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'];
+  const pipelineStats = pipelineStages.map(stage => {
+    const stageLeads = (leads || []).filter(l => (l.status || 'New').toLowerCase() === stage.toLowerCase());
+    return {
+      stage,
+      count: stageLeads.length,
+      value: stageLeads.reduce((acc, l) => acc + (Number(l.value) || 0), 0),
+    };
+  });
 
-  const statCards = [
-    {
-      title: 'Total Clients',
-      value: formatCompact(totalClients),
-      change: '+0%', // Dynamic change would require historical data
-      color: 'bg-white dark:bg-brand-black',
-      text: 'text-brand-black dark:text-brand-white'
-    },
-    {
-      title: 'Pending Tasks',
-      value: formatCompact(pending),
-      change: 'Active',
-      color: 'bg-white dark:bg-brand-black',
-      text: 'text-brand-black dark:text-brand-white'
-    },
-    {
-      title: 'Walk-ins',
-      value: formatCompact(walkIns),
-      change: ranges.find(r => r.id === range)?.label || 'This Month',
-      color: 'bg-white dark:bg-brand-black',
-      text: 'text-brand-black dark:text-brand-white'
-    },
-    {
-      title: 'Revenue',
-      value: `₹${formatCompact(revenue)}`,
-      change: 'Total',
-      color: 'bg-white dark:bg-brand-black',
-      text: 'text-brand-black dark:text-brand-white'
-    }
-  ];
+  // Chart Data Generation from Real Payments
+  const chartData = React.useMemo(() => {
+    if (!payments.length) return [];
+    const grouped = {};
+    payments.forEach(p => {
+      const dateKey = p.payment_date || p.created_at?.split('T')[0] || 'Recent';
+      grouped[dateKey] = (grouped[dateKey] || 0) + (Number(p.amount) || 0);
+    });
+    return Object.entries(grouped)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .slice(-10)
+      .map(([date, amount]) => ({ date, amount }));
+  }, [payments]);
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0 font-sans">
-      {/* Welcome Section */}
+    <div className="space-y-6 py-2 font-sans">
+      {/* 1. Header & Greeting */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-black dark:text-brand-white">
-            Hello, {user?.name?.split(' ')[0]}! 👋
-          </h1>
-          <p className="text-brand-grey mt-1 text-sm">Here's what's happening today.</p>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+            {getGreeting()}, {displayName} 👋
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5">Here's what needs your attention today.</p>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setRangeOpen(!rangeOpen)}
-            className="px-3 py-2 bg-white dark:bg-brand-black rounded-xl shadow-sm border border-brand-grey/10 text-xs font-medium text-brand-black dark:text-brand-white flex items-center gap-2 hover:shadow-md transition-all"
-          >
-            <Icon icon="mdi:calendar" className="w-3.5 h-3.5 text-brand-orange" />
-            <span>{ranges.find(r => r.id === range)?.label}</span>
-            <Icon icon="mdi:chevron-down" className={`w-3.5 h-3.5 text-brand-grey transition-transform ${rangeOpen ? 'rotate-180' : ''}`} />
-          </button>
 
-          {rangeOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setRangeOpen(false)} />
-              <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-brand-black rounded-xl shadow-xl border border-brand-grey/10 z-20 overflow-hidden">
-                {ranges.map(r => (
-                  <button
-                    key={r.id}
-                    onClick={() => { setRange(r.id); setRangeOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-xs hover:bg-brand-grey/5 transition-colors flex items-center justify-between ${range === r.id ? 'font-bold text-brand-orange bg-brand-orange/5' : 'text-brand-black dark:text-brand-white'}`}
-                  >
-                    {r.label}
-                    {range === r.id && <Icon icon="mdi:check" className="w-3.5 h-3.5" />}
-                  </button>
-                ))}
-              </div>
-            </>
+        {/* Quick Action CTAs (Permission-gated) */}
+        <div className="flex flex-wrap items-center gap-2">
+          {['admin', 'sales', 'digital_marketer'].includes(role) && (
+            <button onClick={() => setPanel && setPanel('leads')} className="btn-primary flex items-center gap-1.5 text-xs">
+              <Icon icon="heroicons:plus" className="w-4 h-4" />
+              <span>Add Lead</span>
+            </button>
+          )}
+          {['admin', 'sales'].includes(role) && (
+            <button onClick={() => setPanel && setPanel('clients')} className="btn-secondary flex items-center gap-1.5 text-xs">
+              <Icon icon="heroicons:plus" className="w-4 h-4" />
+              <span>Add Client</span>
+            </button>
+          )}
+          {['admin', 'sales', 'developer', 'hr'].includes(role) && (
+            <button onClick={() => onSelectTask && onSelectTask(null)} className="btn-secondary flex items-center gap-1.5 text-xs">
+              <Icon icon="heroicons:plus" className="w-4 h-4" />
+              <span>Create Task</span>
+            </button>
           )}
         </div>
       </div>
 
-      {/* Stats Overview Section */}
+      {/* 2. KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card, idx) => (
-          <div
-            key={card.title}
-            className={`relative overflow-hidden rounded-3xl p-4 shadow-sm transition-all duration-300 hover:shadow-md ${card.color} border border-brand-grey/10`}
-          >
-            <div className="flex justify-end items-start mb-2">
-              <div className="flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-grey/10 text-brand-grey">
-                {card.change}
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <div className={`text-2xl font-bold mb-0.5 ${card.text}`}>{card.value}</div>
-              <div className={`text-xs font-medium opacity-80 ${card.text}`}>{card.title}</div>
+        {/* Card 1: Revenue */}
+        <div className="saas-card p-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Revenue</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
+              <Icon icon="heroicons:banknotes" className="w-4 h-4" />
             </div>
           </div>
-        ))}
+          <div className="text-2xl font-bold text-gray-900">₹{totalRevenue.toLocaleString('en-IN')}</div>
+          <p className="text-xs text-gray-500 mt-1">Total payments collected</p>
+        </div>
+
+        {/* Card 2: Active Clients */}
+        <div className="saas-card p-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Active Clients</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center">
+              <Icon icon="heroicons:building-office-2" className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{activeClientsCount}</div>
+          <p className="text-xs text-gray-500 mt-1">Active client organizations</p>
+        </div>
+
+        {/* Card 3: Active Leads */}
+        <div className="saas-card p-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Active Leads</span>
+            <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#FF8A1F] flex items-center justify-center">
+              <Icon icon="heroicons:user-group" className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{activeLeadsCount}</div>
+          <p className="text-xs text-gray-500 mt-1">Qualified sales opportunities</p>
+        </div>
+
+        {/* Card 4: Open Tasks */}
+        <div className="saas-card p-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Open Tasks</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-[#D97706] flex items-center justify-center">
+              <Icon icon="heroicons:clipboard-document-check" className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{openTasksCount}</div>
+          <p className="text-xs text-gray-500 mt-1">Tasks pending completion</p>
+        </div>
       </div>
 
-      {/* Main panels */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Recent Tasks */}
-        <div className="xl:col-span-2 bg-white dark:bg-brand-black rounded-3xl p-6 shadow-sm border border-brand-grey/10">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-brand-black dark:text-brand-white">Recent Tasks</h3>
-            <div className="flex gap-2">
-              <button className="p-1.5 rounded-lg hover:bg-brand-grey/5 text-brand-grey transition-colors">
-                <Icon icon="mdi:filter-variant" className="w-4 h-4" />
-              </button>
+      {/* 3. Main Content Split Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Revenue Overview & Sales Pipeline */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Revenue Overview Chart */}
+          <div className="saas-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Revenue Overview</h3>
+                <p className="text-xs text-gray-500">Recorded payment collection timeline</p>
+              </div>
+              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+                {['7d', '30d', '3m', '6m', '12m'].map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setTimeframe(t)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                      timeframe === t ? 'bg-white text-gray-900 shadow-subtle' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {chartData.length === 0 ? (
+              <div className="py-12 text-center border border-dashed border-gray-200 rounded-lg">
+                <Icon icon="heroicons:chart-bar" className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <h4 className="text-sm font-semibold text-gray-700">Not enough data yet</h4>
+                <p className="text-xs text-gray-400 max-w-xs mx-auto mt-1">
+                  Record payments to start generating real-time revenue analytics charts.
+                </p>
+              </div>
+            ) : (
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#FF8A1F" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#FF8A1F" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} />
+                    <Tooltip formatter={(value) => [`₹${value}`, 'Amount']} />
+                    <Area type="monotone" dataKey="amount" stroke="#FF8A1F" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-3">
-            {(tasks || []).slice(0, 5).map((t, i) => (
-              <div key={t.id} className="group flex items-center justify-between p-3 rounded-xl hover:bg-brand-grey/5 transition-all cursor-pointer border border-transparent hover:border-brand-grey/10" onClick={() => onSelectTask && onSelectTask(t)}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${i % 3 === 0 ? 'bg-blue-100 text-blue-600' :
-                    i % 3 === 1 ? 'bg-orange-100 text-orange-600' :
-                      'bg-purple-100 text-purple-600'
-                    }`}>
-                    {t.title.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="text-brand-black dark:text-brand-white font-bold text-sm mb-0.5">{t.title}</div>
-                    <div className="text-xs text-brand-grey flex items-center gap-1.5">
-                      <Icon icon="mdi:calendar-clock" className="w-3 h-3" />
-                      {t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No due date'}
-                    </div>
-                  </div>
+          {/* Sales Pipeline */}
+          {leadsEnabled && (
+            <div className="saas-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">Sales Pipeline</h3>
+                  <p className="text-xs text-gray-500">Distribution of leads across sales stages</p>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${t.status === 'done' ? 'bg-green-100 text-green-700' :
-                    t.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                    {t.status?.replace('_', ' ') || 'Pending'}
-                  </div>
-                  <button className="p-1.5 rounded-full hover:bg-brand-grey/10 text-brand-grey opacity-0 group-hover:opacity-100 transition-all">
-                    <Icon icon="mdi:chevron-right" className="w-4 h-4" />
-                  </button>
-                </div>
+                <button onClick={() => setPanel && setPanel('leads')} className="btn-ghost text-xs">
+                  View Leads →
+                </button>
               </div>
-            ))}
-            {(tasks || []).length === 0 && (
-              <div className="text-center py-8 text-brand-grey text-sm">No recent tasks found</div>
-            )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                {pipelineStats.map(s => (
+                  <div
+                    key={s.stage}
+                    onClick={() => setPanel && setPanel('leads')}
+                    className="p-3 bg-gray-50 hover:bg-orange-50 border border-gray-200 hover:border-orange-200 rounded-[10px] cursor-pointer transition-all text-center"
+                  >
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 block truncate">{s.stage}</span>
+                    <span className="text-lg font-bold text-gray-900 mt-1 block">{s.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Today's Work */}
+          <div className="saas-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Today's Work</h3>
+                <p className="text-xs text-gray-500">Active tasks requiring action</p>
+              </div>
+              <button onClick={() => setPanel && setPanel('tasks')} className="btn-ghost text-xs">
+                View all →
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {(tasks || []).slice(0, 5).map(t => {
+                const isOverdue = t.due_date && t.due_date < today && t.status !== 'Completed' && t.status !== 'done';
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => onSelectTask && onSelectTask(t)}
+                    className={`p-3 rounded-[8px] border transition-all cursor-pointer flex items-center justify-between ${
+                      isOverdue ? 'bg-rose-50/60 border-red-200' : 'bg-white border-[#E5E7EB] hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                        isOverdue ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {t.title.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{t.title}</p>
+                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <Icon icon="heroicons:calendar" className="w-3.5 h-3.5" />
+                          <span>{t.due_date || 'No due date'}</span>
+                          {isOverdue && <span className="text-red-600 font-semibold ml-1">(Overdue)</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`badge ${
+                      t.status === 'Completed' || t.status === 'done' ? 'badge-success' : 'badge-warning'
+                    }`}>
+                      {t.status || 'Pending'}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {(tasks || []).length === 0 && (
+                <div className="py-8 text-center text-xs text-gray-400">
+                  You're all caught up. No tasks need your attention today.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Quick Actions / Overview Side Panel */}
+        {/* Right Column: Needs Attention & Recent Activity */}
         <div className="space-y-6">
-          {/* Quick Actions Grid */}
-          <div className="bg-white dark:bg-brand-black rounded-3xl p-6 shadow-sm border border-brand-grey/10">
-            <h3 className="text-lg font-bold text-brand-black dark:text-brand-white mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Add Client', icon: 'mdi:account-plus', color: 'bg-blue-50 text-blue-600', action: onAddClient },
-                { label: 'New Task', icon: 'mdi:checkbox-marked-circle-plus-outline', color: 'bg-orange-50 text-orange-600', action: () => onSelectTask && onSelectTask(null) }, // Pass null to create new
-                // Removed placeholders for features not yet implemented to keep it clean
-              ].map((item, i) => (
-                <button
-                  key={i}
-                  onClick={item.action}
-                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-3xl bg-brand-white dark:bg-brand-grey/5 border border-transparent hover:border-brand-orange/20 hover:shadow-md transition-all group"
-                >
-                  <div className={`p-3 rounded-xl ${item.color} group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon icon={item.icon} className="w-6 h-6" />
-                  </div>
-                  <span className="font-semibold text-brand-black dark:text-brand-white text-xs">{item.label}</span>
-                </button>
-              ))}
+          {/* Needs Attention Panel */}
+          <div className="saas-card p-6 border-l-4 border-l-[#FF8A1F]">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon icon="heroicons:exclamation-circle" className="w-5 h-5 text-[#FF8A1F]" />
+              <h3 className="text-base font-semibold text-gray-900">Needs Attention</h3>
             </div>
+
+            {needsAttentionList.length === 0 ? (
+              <div className="py-6 text-center">
+                <Icon icon="heroicons:check-circle" className="w-8 h-8 text-emerald-500 mx-auto mb-1" />
+                <p className="text-sm font-semibold text-gray-800">You're all caught up</p>
+                <p className="text-xs text-gray-400 mt-0.5">No items require your attention.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {needsAttentionList.slice(0, 5).map(item => (
+                  <div
+                    key={item.id}
+                    onClick={item.action}
+                    className="p-3 rounded-lg bg-orange-50/50 hover:bg-orange-50 border border-orange-200/60 cursor-pointer transition-colors"
+                  >
+                    <p className="text-xs font-semibold text-gray-900">{item.title}</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{item.subtitle}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Removed Efficiency Card as it was mock data */}
+          {/* Recent Activity Feed */}
+          <div className="saas-card p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            {activities.length === 0 ? (
+              <div className="py-6 text-center text-xs text-gray-400">
+                No recent activity logged.
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {activities.slice(0, 8).map(act => (
+                  <div key={act.id} className="flex items-start gap-3 text-xs border-b border-gray-100 pb-2.5 last:border-0">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon icon="heroicons:clock" className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{act.action}</p>
+                      <p className="text-gray-500">{act.entity_type || 'System record'}</p>
+                      <span className="text-[10px] text-gray-400">{act.created_at ? new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

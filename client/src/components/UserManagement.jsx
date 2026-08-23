@@ -529,12 +529,10 @@ const UserManagement = ({ users, onAdd, onUpdate, onDelete }) => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await onDelete(userId);
-      } catch (error) {
-        console.error('Error deleting user:', error);
-      }
+    try {
+      await onDelete(userId);
+    } catch (error) {
+      console.error('Error deleting user:', error);
     }
   };
 
