@@ -598,8 +598,6 @@ function AppContent() {
         <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          isCollapsed={isSidebarCollapsed}
-          setIsCollapsed={setIsSidebarCollapsed}
           panel={panel}
           setPanel={setPanel}
         />
