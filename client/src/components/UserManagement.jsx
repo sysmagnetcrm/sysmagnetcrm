@@ -64,7 +64,7 @@ const UserCard = ({ user, onEdit, onDelete, onUpdate, roles }) => {
     >
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold shadow-sm transition-colors ${isEditing ? 'bg-brand-orange/10 text-brand-orange' : 'bg-brand-grey/5 text-brand-black dark:text-brand-white'}`}>
-          {(user?.name || user?.email || '?').charAt(0).toUpperCase()}
+          {String(user?.name || user?.email || '?').charAt(0).toUpperCase()}
         </div>
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {isEditing ? (
@@ -112,7 +112,7 @@ const UserCard = ({ user, onEdit, onDelete, onUpdate, roles }) => {
               className="soft-input w-full py-1.5 text-sm px-3"
             >
               {roles.map(r => (
-                <option key={r.name} value={r.name}>{r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>
+                <option key={r.name || `role-${Math.random()}`} value={r.name || ''}>{String(r.name || 'unknown').charAt(0).toUpperCase() + String(r.name || 'unknown').slice(1)}</option>
               ))}
             </select>
             {/* Password management */}
@@ -295,7 +295,7 @@ const AddUserModal = ({ isOpen, onClose, onSubmit, roles, onCreateRole }) => {
                   className="soft-input w-full bg-brand-grey/5 border-transparent focus:bg-white"
                 >
                   {roles.map(r => (
-                    <option key={r.name} value={r.name}>{r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>
+                    <option key={r.name || `role-${Math.random()}`} value={r.name || ''}>{String(r.name || 'unknown').charAt(0).toUpperCase() + String(r.name || 'unknown').slice(1)}</option>
                   ))}
                 </select>
                 <button
@@ -624,7 +624,7 @@ const UserManagement = ({ users, onAdd, onUpdate, onDelete }) => {
           >
             <option value="all">All Roles</option>
             {roles.map(r => (
-              <option key={r.name} value={r.name}>{r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>
+              <option key={r.name || `role-${Math.random()}`} value={r.name || ''}>{String(r.name || 'unknown').charAt(0).toUpperCase() + String(r.name || 'unknown').slice(1)}</option>
             ))}
           </select>
         </div>
@@ -673,7 +673,7 @@ const UserManagement = ({ users, onAdd, onUpdate, onDelete }) => {
                     className="soft-input bg-white border-transparent flex-1"
                   >
                     {roles.map(r => (
-                      <option key={r.name} value={r.name}>{r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>
+                      <option key={r.name || `role-${Math.random()}`} value={r.name || ''}>{String(r.name || 'unknown').charAt(0).toUpperCase() + String(r.name || 'unknown').slice(1)}</option>
                     ))}
                   </select>
                   <button
