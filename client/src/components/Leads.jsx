@@ -1,15 +1,15 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
 import { Icon } from '@iconify/react';
 import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
+import CustomSelect from './CustomSelect';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
 
-const LeadCard = ({ lead, onSelect, onCall, onMail, onQualify, onConvert, onDelete, onEdit, userRole, salesUsers = [], onAssignTo }) => {
+const LeadCard = ({ lead, onSelect, onCall, onMail, onDelete, onEdit, userRole }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'New': return 'badge-info';
@@ -25,7 +25,6 @@ const LeadCard = ({ lead, onSelect, onCall, onMail, onQualify, onConvert, onDele
       onClick={() => onSelect && onSelect(lead)}
       className="saas-card p-4 saas-card-hover flex flex-col justify-between cursor-pointer group"
     >
-      {/* Header */}
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
@@ -39,7 +38,6 @@ const LeadCard = ({ lead, onSelect, onCall, onMail, onQualify, onConvert, onDele
           </span>
         </div>
 
-        {/* Contact info block */}
         <div className="space-y-1.5 mb-3 py-2 border-y border-[#E4E7EC] text-xs text-[#667085]">
           <div className="flex items-center gap-2">
             <Icon icon="heroicons:phone" className="w-3.5 h-3.5 text-[#98A2B3] shrink-0" />
@@ -58,7 +56,6 @@ const LeadCard = ({ lead, onSelect, onCall, onMail, onQualify, onConvert, onDele
         </div>
       </div>
 
-      {/* Card Actions */}
       <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-1">
           <button
@@ -104,14 +101,8 @@ const Leads = ({
   leads = [],
   onCreateLead,
   onUpdateLead,
-  onQualify,
-  onConvert,
   onDeleteLead,
-  onBulkImport,
-  onAssignLead,
-  salesAgents = [],
   userRole = 'sales',
-  loading = false,
   error = null,
   onRetry,
 }) => {
@@ -121,14 +112,12 @@ const Leads = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Filters state
   const [activeFilters, setActiveFilters] = useState({
     status: 'all',
     source: 'all',
     service: 'all',
   });
 
-  // Form State
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -141,7 +130,6 @@ const Leads = ({
     notes: '',
   });
 
-  // Metrics
   const counts = useMemo(() => {
     const total = leads.length;
     const newCount = leads.filter(l => l.status === 'New').length;
@@ -151,7 +139,6 @@ const Leads = ({
     return { total, newCount, contacted, qualified, unqualified };
   }, [leads]);
 
-  // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
       const q = searchQuery.toLowerCase().trim();
@@ -169,7 +156,6 @@ const Leads = ({
     });
   }, [leads, searchQuery, activeFilters]);
 
-  // Handlers
   const handleOpenAdd = () => {
     setEditingLead(null);
     setFormData({
@@ -352,14 +338,12 @@ const Leads = ({
               onEdit={handleOpenEdit}
               onDelete={(id) => setDeletingLeadId(id)}
               userRole={userRole}
-              salesUsers={salesAgents}
-              onAssignTo={(id, agentId) => onAssignLead && onAssignLead(id, agentId)}
             />
           ))}
         </div>
       )}
 
-      {/* Add / Edit Lead Drawer */}
+      {/* Add / Edit Lead Form Drawer */}
       <FormDrawer
         isOpen={showAddDrawer}
         onClose={() => setShowAddDrawer(false)}
@@ -436,49 +420,43 @@ const Leads = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="saas-label">Initial Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="New">New</option>
-                <option value="Contacted">Contacted</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Unqualified">Unqualified</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Initial Status"
+              value={formData.status}
+              onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+              options={[
+                { value: 'New', label: 'New' },
+                { value: 'Contacted', label: 'Contacted' },
+                { value: 'Qualified', label: 'Qualified' },
+                { value: 'Unqualified', label: 'Unqualified' },
+              ]}
+            />
 
-            <div>
-              <label className="saas-label">Lead Source</label>
-              <select
-                value={formData.source}
-                onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="Manual Entry">Manual Entry</option>
-                <option value="Website">Website</option>
-                <option value="Referral">Referral</option>
-                <option value="LinkedIn">LinkedIn</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Lead Source"
+              value={formData.source}
+              onChange={(val) => setFormData(prev => ({ ...prev, source: val }))}
+              options={[
+                { value: 'Manual Entry', label: 'Manual Entry' },
+                { value: 'Website', label: 'Website' },
+                { value: 'Referral', label: 'Referral' },
+                { value: 'LinkedIn', label: 'LinkedIn' },
+              ]}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="saas-label">Interested Service</label>
-              <select
-                value={formData.service}
-                onChange={(e) => setFormData(prev => ({ ...prev, service: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="Web Development">Web Development</option>
-                <option value="Mobile App">Mobile App</option>
-                <option value="UI/UX Design">UI/UX Design</option>
-                <option value="Cloud Solutions">Cloud Solutions</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Interested Service"
+              value={formData.service}
+              onChange={(val) => setFormData(prev => ({ ...prev, service: val }))}
+              options={[
+                { value: 'Web Development', label: 'Web Development' },
+                { value: 'Mobile App', label: 'Mobile App' },
+                { value: 'UI/UX Design', label: 'UI/UX Design' },
+                { value: 'Cloud Solutions', label: 'Cloud Solutions' },
+              ]}
+            />
 
             <div>
               <label className="saas-label">Estimated Value</label>
@@ -496,20 +474,21 @@ const Leads = ({
           </div>
         </div>
 
-        {/* Section 3: Notes */}
+        {/* Section 3: Notes & Context */}
         <div className="space-y-4 pt-2">
           <div className="border-b border-[#E4E7EC] pb-2">
             <h4 className="text-[13px] font-semibold text-[#344054]">
-              NOTES
+              NOTES & CONTEXT
             </h4>
           </div>
 
           <div>
+            <label className="saas-label">Notes / Context</label>
             <textarea
               rows={4}
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Optional context or background notes about this lead..."
+              placeholder="Add notes, requirements, follow-up details, or other context..."
               className="saas-input min-h-[110px] h-auto py-2.5"
             />
           </div>

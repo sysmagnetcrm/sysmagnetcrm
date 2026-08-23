@@ -36,8 +36,8 @@ const FormDrawer = ({
         aria-hidden="true"
       />
 
-      {/* Slide-over Drawer Panel - Attached exactly to top:0, right:0, bottom:0 with 560px width */}
-      <div className="relative bg-white w-full sm:w-[560px] h-screen flex flex-col z-50 animate-fade-fast border-l border-[#E4E7EC] shadow-modal rounded-none">
+      {/* Slide-over Drawer Panel - Attached to top:0, right:0, bottom:0 with 560px width & 100dvh height */}
+      <div className="relative bg-white w-full sm:w-[560px] h-[100dvh] flex flex-col z-50 animate-fade-fast border-l border-[#E4E7EC] shadow-modal rounded-none">
         {/* Fixed Header (76px Height) */}
         <div className="h-[76px] px-6 border-b border-[#E4E7EC] bg-white flex items-center justify-between shrink-0">
           <div>
@@ -53,13 +53,13 @@ const FormDrawer = ({
           </button>
         </div>
 
-        {/* Scrollable Form Body (Only Body Scrolls) */}
+        {/* Scrollable Form Body (Flex 1, Only Body Scrolls, pb-10 guarantees zero footer overlap) */}
         <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-7">
+          <div className="flex-1 overflow-y-auto p-6 pb-10 space-y-7">
             {children}
           </div>
 
-          {/* Sticky Fixed Footer (72px Height) */}
+          {/* Sticky Fixed Footer (72px Height, Flex Shrink 0, Part of Flex Layout) */}
           <div className="h-[72px] px-6 border-t border-[#E4E7EC] bg-white flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"

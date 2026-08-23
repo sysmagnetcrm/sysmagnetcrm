@@ -4,6 +4,7 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
+import CustomSelect from './CustomSelect';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
@@ -112,7 +113,6 @@ const Clients = ({
     notes: '',
   });
 
-  // Metrics
   const counts = useMemo(() => {
     const total = clients.length;
     const active = clients.filter(c => c.status === 'Active').length;
@@ -121,7 +121,6 @@ const Clients = ({
     return { total, active, newClients, pending };
   }, [clients]);
 
-  // Filtered Clients
   const filteredClients = useMemo(() => {
     return clients.filter(c => {
       const q = searchQuery.toLowerCase().trim();
@@ -173,7 +172,7 @@ const Clients = ({
 
   return (
     <div className="space-y-5 py-1 font-sans">
-      {/* Standardized Page Header */}
+      {/* Page Header */}
       <PageHeader
         category="CLIENT MANAGEMENT"
         title="Clients"
@@ -286,7 +285,7 @@ const Clients = ({
         </div>
       )}
 
-      {/* Standardized Form Drawer */}
+      {/* Form Drawer */}
       <FormDrawer
         isOpen={showAddDrawer}
         onClose={() => setShowAddDrawer(false)}
@@ -363,33 +362,29 @@ const Clients = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="saas-label">Account Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="Active">Active</option>
-                <option value="New">New</option>
-                <option value="Pending">Pending</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Account Status"
+              value={formData.status}
+              onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+              options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'New', label: 'New' },
+                { value: 'Pending', label: 'Pending' },
+                { value: 'Inactive', label: 'Inactive' },
+              ]}
+            />
 
-            <div>
-              <label className="saas-label">Service Type</label>
-              <select
-                value={formData.service_type}
-                onChange={(e) => setFormData(prev => ({ ...prev, service_type: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="Software">Software</option>
-                <option value="Web Design">Web Design</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Consulting">Consulting</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Service Type"
+              value={formData.service_type}
+              onChange={(val) => setFormData(prev => ({ ...prev, service_type: val }))}
+              options={[
+                { value: 'Software', label: 'Software' },
+                { value: 'Web Design', label: 'Web Design' },
+                { value: 'Marketing', label: 'Marketing' },
+                { value: 'Consulting', label: 'Consulting' },
+              ]}
+            />
           </div>
         </div>
 
@@ -402,6 +397,7 @@ const Clients = ({
           </div>
 
           <div>
+            <label className="saas-label">Notes & Remarks</label>
             <textarea
               rows={4}
               value={formData.notes}

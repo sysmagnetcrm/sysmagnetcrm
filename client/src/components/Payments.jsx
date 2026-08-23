@@ -4,13 +4,13 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
+import CustomSelect from './CustomSelect';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
 import { usePayments } from '../hooks/usePayments';
-import { paymentsAPI, clientsAPI } from '../utils/supabaseServices';
+import { clientsAPI } from '../utils/supabaseServices';
 
-// Locale-aware date formatter (DD/MM/YYYY)
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A';
   try {
@@ -26,22 +26,19 @@ const formatDate = (dateStr) => {
 };
 
 const Payments = () => {
-  const { payments = [], loading, error, refetch, createPayment, updatePayment, deletePayment } = usePayments();
+  const { payments = [], loading, error, refetch, createPayment, deletePayment } = usePayments();
   const [clients, setClients] = useState([]);
   const [showDrawer, setShowDrawer] = useState(false);
-  const [editingPayment, setEditingPayment] = useState(null);
   const [deletingPaymentId, setDeletingPaymentId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
 
-  // Active filters state
   const [activeFilters, setActiveFilters] = useState({
     status: 'all',
     method: 'all',
   });
 
-  // Form State
   const [formData, setFormData] = useState({
     clientId: '',
     invoiceNo: '',
@@ -55,7 +52,6 @@ const Payments = () => {
     notes: '',
   });
 
-  // Load clients list for relational dropdown
   useEffect(() => {
     const loadClients = async () => {
       try {
@@ -68,12 +64,10 @@ const Payments = () => {
     loadClients();
   }, []);
 
-  // Compute derived remaining balance from invoice data
   const invoiceTotalNum = Number(formData.invoiceTotal) || 0;
   const alreadyPaidNum = Number(formData.alreadyPaid) || 0;
   const remainingBalance = Math.max(0, invoiceTotalNum - alreadyPaidNum);
 
-  // Handle Client Selection -> Auto-populate available invoice total if client selected
   const handleClientChange = (clientId) => {
     const clientObj = clients.find(c => String(c.id) === String(clientId));
     setFormData(prev => ({
@@ -88,7 +82,6 @@ const Payments = () => {
     setValidationError('');
   };
 
-  // Inline Payment Amount Validation
   const handleAmountChange = (val) => {
     const amountNum = Number(val) || 0;
     setFormData(prev => ({ ...prev, paymentAmount: val }));
@@ -102,7 +95,6 @@ const Payments = () => {
     }
   };
 
-  // Summary Metrics
   const metrics = useMemo(() => {
     const totalRev = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
     const pendingPayments = payments.filter(p => p.payment_status === 'Pending' || p.status === 'Pending');
@@ -118,7 +110,6 @@ const Payments = () => {
     };
   }, [payments]);
 
-  // Filtered Payments List
   const filteredPayments = useMemo(() => {
     return payments.filter(p => {
       const q = searchQuery.toLowerCase().trim();
@@ -135,9 +126,7 @@ const Payments = () => {
     });
   }, [payments, searchQuery, activeFilters]);
 
-  // Handlers
   const handleOpenAdd = () => {
-    setEditingPayment(null);
     setValidationError('');
     setFormData({
       clientId: clients.length > 0 ? clients[0].id : '',
@@ -206,9 +195,14 @@ const Payments = () => {
     }
   };
 
+  const clientOptions = clients.map(c => ({
+    value: c.id,
+    label: `${c.name} (${c.email || c.phone || 'Account'})`,
+  }));
+
   return (
     <div className="space-y-5 py-1 font-sans">
-      {/* Standardized Page Header */}
+      {/* Page Header */}
       <PageHeader
         category="FINANCIAL MANAGEMENT"
         title="Payments"
@@ -286,7 +280,7 @@ const Payments = () => {
         onClearFilters={handleClearFilters}
       />
 
-      {/* Standardized Payments Table */}
+      {/* Payments Table */}
       {error ? (
         <ErrorState
           title="Unable to load payments"
@@ -383,22 +377,14 @@ const Payments = () => {
             </h4>
           </div>
 
-          <div>
-            <label className="saas-label">Select Client Organization *</label>
-            <select
-              required
-              value={formData.clientId}
-              onChange={(e) => handleClientChange(e.target.value)}
-              className="saas-input"
-            >
-              <option value="">-- Choose Client --</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.email || c.phone || 'Account'})
-                </option>
-              ))}
-            </select>
-          </div>
+          <CustomSelect
+            label="Select Client Organization *"
+            required
+            value={formData.clientId}
+            onChange={(val) => handleClientChange(val)}
+            placeholder="-- Choose Client --"
+            options={clientOptions}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
@@ -489,20 +475,18 @@ const Payments = () => {
               />
             </div>
 
-            <div>
-              <label className="saas-label">Payment Method</label>
-              <select
-                value={formData.paymentMethod}
-                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                className="saas-input"
-              >
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="UPI">UPI / GPay / PhonePe</option>
-                <option value="Credit Card">Credit Card</option>
-                <option value="Cheque">Cheque</option>
-                <option value="Cash">Cash</option>
-              </select>
-            </div>
+            <CustomSelect
+              label="Payment Method"
+              value={formData.paymentMethod}
+              onChange={(val) => setFormData(prev => ({ ...prev, paymentMethod: val }))}
+              options={[
+                { value: 'Bank Transfer', label: 'Bank Transfer' },
+                { value: 'UPI', label: 'UPI / GPay / PhonePe' },
+                { value: 'Credit Card', label: 'Credit Card' },
+                { value: 'Cheque', label: 'Cheque' },
+                { value: 'Cash', label: 'Cash' },
+              ]}
+            />
           </div>
 
           <div>
@@ -526,6 +510,7 @@ const Payments = () => {
           </div>
 
           <div>
+            <label className="saas-label">Notes & Remarks</label>
             <textarea
               rows={4}
               value={formData.notes}
