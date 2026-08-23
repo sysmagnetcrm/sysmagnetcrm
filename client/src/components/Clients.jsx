@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Icon } from '@iconify/react';
+import PageHeader from './PageHeader';
+import StatCard from './StatCard';
+import FilterBar from './FilterBar';
+import FormDrawer from './FormDrawer';
 import EmptyState from './EmptyState';
+import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
 
 const ClientCard = ({ client, onSelect, onCreateTask, onDelete, userRole }) => {
@@ -15,49 +20,49 @@ const ClientCard = ({ client, onSelect, onCreateTask, onDelete, userRole }) => {
   };
 
   return (
-    <div className="saas-card p-5 saas-card-hover flex flex-col justify-between">
+    <div className="saas-card p-4 saas-card-hover flex flex-col justify-between">
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <h3 className="font-bold text-gray-900 truncate text-base mb-0.5" title={client.name}>
+            <h3 className="font-bold text-[#111827] truncate text-base mb-0.5" title={client.name}>
               {client.name}
             </h3>
-            <p className="text-xs text-gray-500 truncate">{client.contact || client.email || 'No contact person'}</p>
+            <p className="text-xs text-[#667085] truncate">{client.contact || client.email || 'No primary contact'}</p>
           </div>
           <span className={`badge ${getStatusBadge(client.status)}`}>
             {client.status || 'Active'}
           </span>
         </div>
 
-        <div className="space-y-1.5 mb-4 py-2 border-y border-gray-100 text-xs text-gray-600">
+        <div className="space-y-1.5 mb-4 py-2 border-y border-[#E4E7EC] text-xs text-[#667085]">
           <div className="flex items-center gap-2">
-            <Icon icon="heroicons:phone" className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <Icon icon="heroicons:phone" className="w-3.5 h-3.5 text-[#98A2B3] shrink-0" />
             <span className="truncate">{client.phone || 'N/A'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Icon icon="heroicons:envelope" className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <Icon icon="heroicons:envelope" className="w-3.5 h-3.5 text-[#98A2B3] shrink-0" />
             <span className="truncate">{client.email || 'N/A'}</span>
           </div>
           {client.service_type && (
             <div className="flex items-center gap-2">
-              <Icon icon="heroicons:briefcase" className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <Icon icon="heroicons:briefcase" className="w-3.5 h-3.5 text-[#98A2B3] shrink-0" />
               <span className="truncate">{client.service_type}</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 pt-2">
+      <div className="flex items-center gap-2 pt-1">
         <button
           onClick={() => onSelect(client)}
-          className="btn-secondary flex-1 text-xs py-1.5"
+          className="btn-secondary flex-1 py-1.5 text-xs"
         >
           <Icon icon="heroicons:eye" className="w-3.5 h-3.5 mr-1" />
           Details
         </button>
         <button
           onClick={() => onCreateTask(client)}
-          className="btn-secondary flex-1 text-xs py-1.5"
+          className="btn-secondary flex-1 py-1.5 text-xs"
         >
           <Icon icon="heroicons:plus-circle" className="w-3.5 h-3.5 mr-1 text-[#FF8A1F]" />
           Task
@@ -65,7 +70,7 @@ const ClientCard = ({ client, onSelect, onCreateTask, onDelete, userRole }) => {
         {onDelete && userRole === 'admin' && (
           <button
             onClick={() => onDelete(client)}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1.5 text-[#667085] hover:text-[#F04438] hover:bg-[#FEF3F2] rounded-[6px] transition-colors"
             title="Delete Client"
           >
             <Icon icon="heroicons:trash" className="w-4 h-4" />
@@ -76,7 +81,27 @@ const ClientCard = ({ client, onSelect, onCreateTask, onDelete, userRole }) => {
   );
 };
 
-const AddClientDrawer = ({ isOpen, onClose, onSubmit }) => {
+const Clients = ({
+  clients = [],
+  onSelectClient,
+  onCreateTask,
+  onCreateClient,
+  onDeleteClient,
+  userRole = 'admin',
+  loading = false,
+  error = null,
+  onRetry,
+}) => {
+  const [showAddDrawer, setShowAddDrawer] = useState(false);
+  const [deletingClient, setDeletingClient] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const [activeFilters, setActiveFilters] = useState({
+    status: 'all',
+    service_type: 'all',
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -84,251 +109,310 @@ const AddClientDrawer = ({ isOpen, onClose, onSubmit }) => {
     email: '',
     status: 'Active',
     service_type: 'Software',
-    notes: ''
+    notes: '',
   });
 
-  const handleSubmit = (e) => {
+  // Metrics
+  const counts = useMemo(() => {
+    const total = clients.length;
+    const active = clients.filter(c => c.status === 'Active').length;
+    const newClients = clients.filter(c => c.status === 'New').length;
+    const pending = clients.filter(c => c.status === 'Pending').length;
+    return { total, active, newClients, pending };
+  }, [clients]);
+
+  // Filtered Clients
+  const filteredClients = useMemo(() => {
+    return clients.filter(c => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q ||
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.contact || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.phone || '').toLowerCase().includes(q);
+
+      const matchesStatus = activeFilters.status === 'all' || (c.status || 'Active').toLowerCase() === activeFilters.status.toLowerCase();
+      const matchesService = activeFilters.service_type === 'all' || (c.service_type || '').toLowerCase() === activeFilters.service_type.toLowerCase();
+
+      return matchesSearch && matchesStatus && matchesService;
+    });
+  }, [clients, searchQuery, activeFilters]);
+
+  const handleFilterChange = (key, value) => {
+    setActiveFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({ status: 'all', service_type: 'all' });
+    setSearchQuery('');
+  };
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
-    setFormData({ name: '', contact: '', phone: '', email: '', status: 'Active', service_type: 'Software', notes: '' });
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="drawer-backdrop" onClick={onClose}></div>
-      <div className="relative bg-white w-full max-w-md h-full shadow-modal z-50 flex flex-col animate-fade-fast border-l border-[#E5E7EB]">
-        <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Add New Client</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <Icon icon="heroicons:x-mark" className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-          <div>
-            <label className="saas-label" htmlFor="client-name">Company Name *</label>
-            <input
-              id="client-name"
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="saas-input"
-              placeholder="Acme Systems Ltd"
-            />
-          </div>
-
-          <div>
-            <label className="saas-label" htmlFor="client-contact">Primary Contact Person *</label>
-            <input
-              id="client-contact"
-              type="text"
-              required
-              value={formData.contact}
-              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-              className="saas-input"
-              placeholder="Sarah Connor"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="saas-label" htmlFor="client-phone">Phone *</label>
-              <input
-                id="client-phone"
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="saas-input"
-                placeholder="+91 9876543210"
-              />
-            </div>
-            <div>
-              <label className="saas-label" htmlFor="client-email">Email</label>
-              <input
-                id="client-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="saas-input"
-                placeholder="sarah@acme.com"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="saas-label" htmlFor="client-status">Status</label>
-              <select
-                id="client-status"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="saas-input"
-              >
-                {['Active', 'New', 'Pending', 'Inactive'].map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="saas-label" htmlFor="client-service">Service Type</label>
-              <select
-                id="client-service"
-                value={formData.service_type}
-                onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                className="saas-input"
-              >
-                {['Software', 'Consulting', 'Digital Marketing', 'Maintenance', 'Support'].map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="saas-label" htmlFor="client-notes">Notes</label>
-            <textarea
-              id="client-notes"
-              rows={3}
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="saas-input"
-              placeholder="Additional client details or contractual notes..."
-            />
-          </div>
-
-          <div className="pt-4 flex gap-3 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary flex-1">
-              Add Client
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const Clients = ({ clients, onSelect, onAdd, onCreateTask, searchQuery, userRole, onDelete }) => {
-  const [showAddDrawer, setShowAddDrawer] = useState(false);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [clientToDelete, setClientToDelete] = useState(null);
-
-  const list = Array.isArray(clients) ? clients : [];
-  const q = String(searchQuery || '').toLowerCase();
-  const filteredClients = list.filter(client => {
-    const name = String(client?.name || '').toLowerCase();
-    const contact = String(client?.contact || '').toLowerCase();
-    const status = String(client?.status || '');
-    const matchesSearch = name.includes(q) || contact.includes(q);
-    const matchesStatus = filterStatus === 'all' || status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleExportCSV = () => {
-    const headers = ['Company', 'Contact', 'Phone', 'Email', 'Status', 'Service Type'];
-    const rows = filteredClients.map(c => [c.name, c.contact, c.phone, c.email || '', c.status, c.service_type || '']);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${(v ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'clients.csv'; a.click(); URL.revokeObjectURL(url);
+    setSubmitting(true);
+    try {
+      if (onCreateClient) {
+        await onCreateClient(formData);
+      }
+      setShowAddDrawer(false);
+      setFormData({
+        name: '',
+        contact: '',
+        phone: '',
+        email: '',
+        status: 'Active',
+        service_type: 'Software',
+        notes: '',
+      });
+    } catch (err) {
+      console.error('Client creation error:', err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="space-y-6 py-2">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Clients</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Manage your client relationships, organizations, and service contracts
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleExportCSV} className="btn-secondary text-xs flex items-center gap-1.5">
-            <Icon icon="heroicons:arrow-down-tray" className="w-4 h-4" />
-            <span>Export CSV</span>
-          </button>
-          {(userRole === 'admin' || userRole === 'sales') && (
-            <button onClick={() => setShowAddDrawer(true)} className="btn-primary text-xs flex items-center gap-1.5">
-              <Icon icon="heroicons:plus" className="w-4 h-4" />
-              <span>Add Client</span>
-            </button>
-          )}
-        </div>
+    <div className="space-y-5 py-1 font-sans">
+      {/* Standardized Page Header */}
+      <PageHeader
+        category="CLIENT MANAGEMENT"
+        title="Clients"
+        subtitle="Manage client organizations, business contacts and account status."
+        primaryActionLabel="Add Client"
+        onPrimaryAction={() => setShowAddDrawer(true)}
+        exportActionLabel="Export"
+        onExportAction={() => console.log('Export clients')}
+      />
+
+      {/* Summary Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <StatCard
+          label="Active Clients"
+          value={counts.active}
+          icon="heroicons:building-office-2"
+          iconColor="text-[#12B76A]"
+          iconBg="bg-[#F6FEF9]"
+          supportingText="Active business accounts"
+          onClick={() => handleFilterChange('status', 'Active')}
+        />
+        <StatCard
+          label="New Accounts"
+          value={counts.newClients}
+          icon="heroicons:user-plus"
+          iconColor="text-[#3B82F6]"
+          iconBg="bg-[#EFF8FF]"
+          supportingText="Recently onboarded"
+          onClick={() => handleFilterChange('status', 'New')}
+        />
+        <StatCard
+          label="Pending Review"
+          value={counts.pending}
+          icon="heroicons:clock"
+          iconColor="text-[#F79009]"
+          iconBg="bg-[#FFFAEB]"
+          supportingText="Awaiting confirmation"
+          onClick={() => handleFilterChange('status', 'Pending')}
+        />
+        <StatCard
+          label="Total Accounts"
+          value={counts.total}
+          icon="heroicons:users"
+          iconColor="text-[#FF8A1F]"
+          iconBg="bg-[#FFF4E8]"
+          supportingText="Registered organizations"
+          onClick={() => handleClearFilters()}
+        />
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="flex items-center gap-3 bg-white p-3 rounded-[10px] border border-[#E5E7EB]">
-        <Icon icon="heroicons:funnel" className="w-4 h-4 text-gray-400 ml-1" />
-        <span className="text-xs font-semibold text-gray-700">Filter Status:</span>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="text-xs font-medium text-gray-800 bg-gray-50 border border-gray-200 rounded-[6px] px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-[#FF8A1F]"
-        >
-          <option value="all">All Clients ({list.length})</option>
-          <option value="Active">Active</option>
-          <option value="New">New</option>
-          <option value="Pending">Pending</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-      </div>
+      {/* Filter & Search Bar */}
+      <FilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search clients by name, contact or email..."
+        primaryFilters={[
+          {
+            key: 'status',
+            label: 'Status',
+            options: [
+              { value: 'Active', label: 'Active' },
+              { value: 'New', label: 'New' },
+              { value: 'Pending', label: 'Pending' },
+              { value: 'Inactive', label: 'Inactive' },
+            ],
+          },
+          {
+            key: 'service_type',
+            label: 'Service',
+            options: [
+              { value: 'Software', label: 'Software' },
+              { value: 'Web Design', label: 'Web Design' },
+              { value: 'Marketing', label: 'Marketing' },
+              { value: 'Consulting', label: 'Consulting' },
+            ],
+          },
+        ]}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
 
-      {/* Grid Display */}
-      {filteredClients.length === 0 ? (
+      {/* Main Grid View */}
+      {error ? (
+        <ErrorState
+          title="Unable to load clients"
+          description="Something went wrong while retrieving client organizations from the server."
+          onRetry={onRetry}
+        />
+      ) : filteredClients.length === 0 ? (
         <EmptyState
           icon="heroicons:building-office-2"
-          title="No clients found"
-          description={searchQuery ? `No results match "${searchQuery}".` : "Add your first client to start managing business accounts."}
-          actionLabel={(userRole === 'admin' || userRole === 'sales') ? "Add Client" : null}
+          title="No clients yet"
+          description="Add your first client to start managing business accounts and project deliverables."
+          actionLabel="Add Client"
           onAction={() => setShowAddDrawer(true)}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredClients.map((client) => (
             <ClientCard
               key={client.id}
               client={client}
-              onSelect={onSelect}
+              onSelect={onSelectClient}
               onCreateTask={onCreateTask}
-              onDelete={(c) => setClientToDelete(c)}
+              onDelete={(c) => setDeletingClient(c)}
               userRole={userRole}
             />
           ))}
         </div>
       )}
 
-      {/* Add Client Drawer */}
-      <AddClientDrawer
+      {/* Standardized Form Drawer */}
+      <FormDrawer
         isOpen={showAddDrawer}
         onClose={() => setShowAddDrawer(false)}
-        onSubmit={(data) => {
-          onAdd(data);
-          setShowAddDrawer(false);
-        }}
-      />
+        title="Add New Client"
+        subtitle="Create a new client organization profile."
+        submitLabel="Add Client"
+        submitting={submitting}
+        onSubmit={handleFormSubmit}
+      >
+        {/* Section 1: Company Information */}
+        <div className="space-y-4">
+          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
+            Company Information
+          </h4>
+
+          <div>
+            <label className="saas-label">Company Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g. Acme Solutions Pvt Ltd"
+              className="saas-input"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="saas-label">Primary Contact *</label>
+              <input
+                type="text"
+                required
+                value={formData.contact}
+                onChange={(e) => setFormData(prev => ({ ...prev, contact: e.target.value }))}
+                placeholder="e.g. Vikram Verma"
+                className="saas-input"
+              />
+            </div>
+            <div>
+              <label className="saas-label">Phone Number *</label>
+              <input
+                type="text"
+                required
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="+91 98765 43210"
+                className="saas-input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="saas-label">Email Address</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="contact@acmesolutions.com"
+              className="saas-input"
+            />
+          </div>
+        </div>
+
+        {/* Section 2: Client Details */}
+        <div className="space-y-4 pt-2">
+          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
+            Client Details
+          </h4>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="saas-label">Account Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                className="saas-input"
+              >
+                <option value="Active">Active</option>
+                <option value="New">New</option>
+                <option value="Pending">Pending</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="saas-label">Service Type</label>
+              <select
+                value={formData.service_type}
+                onChange={(e) => setFormData(prev => ({ ...prev, service_type: e.target.value }))}
+                className="saas-input"
+              >
+                <option value="Software">Software</option>
+                <option value="Web Design">Web Design</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Consulting">Consulting</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="saas-label">Additional Notes</label>
+            <textarea
+              rows={3}
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              placeholder="Important account notes or SLA details..."
+              className="saas-input"
+            />
+          </div>
+        </div>
+      </FormDrawer>
 
       {/* Delete Confirmation Modal */}
       <ConfirmDialog
-        isOpen={!!clientToDelete}
+        isOpen={!!deletingClient}
         title="Delete Client Account"
-        message={`Are you sure you want to delete "${clientToDelete?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete ${deletingClient?.name}? All associated records may be impacted.`}
         confirmLabel="Delete Client"
-        isDanger={true}
-        onConfirm={() => {
-          if (clientToDelete && onDelete) {
-            onDelete(clientToDelete.id);
+        onConfirm={async () => {
+          if (deletingClient && onDeleteClient) {
+            await onDeleteClient(deletingClient.id);
           }
-          setClientToDelete(null);
+          setDeletingClient(null);
         }}
-        onCancel={() => setClientToDelete(null)}
+        onCancel={() => setDeletingClient(null)}
       />
     </div>
   );
