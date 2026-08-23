@@ -534,9 +534,10 @@ function AppContent() {
         return (
           <ClientPortal />
         );
+      case 'admin_tasks':
       case 'client_tasks':
         return (
-          <AdminClientTasks users={allUsers} />
+          <AdminClientTasks users={allUsers} clients={clients} onSelectTask={setSelectedTask} />
         );
       case 'staff_workboard':
         return (

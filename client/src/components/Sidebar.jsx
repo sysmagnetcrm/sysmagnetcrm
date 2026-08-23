@@ -81,17 +81,6 @@ const Sidebar = ({
     }
   ];
 
-  // Auto-expand section containing active page if currently collapsed
-  useEffect(() => {
-    navigationGroups.forEach((group) => {
-      if (group.key && group.items.some(item => item.id === panel)) {
-        if (sidebarSections[group.key] === false) {
-          toggleSection(group.key);
-        }
-      }
-    });
-  }, [panel]);
-
   const handleNavClick = (itemId) => {
     setPanel(itemId);
     if (window.innerWidth < 1024) {
@@ -184,8 +173,9 @@ const Sidebar = ({
             const allowedItems = group.items.filter(item => item.roles.includes(role));
             if (allowedItems.length === 0) return null;
 
-            const isSectionExpanded = group.key ? (sidebarSections[group.key] !== false) : true;
+            const userPreferenceExpanded = group.key ? (sidebarSections[group.key] !== false) : true;
             const containsActive = group.title && group.items.some(item => item.id === panel);
+            const isSectionExpanded = userPreferenceExpanded || containsActive;
 
             return (
               <div key={gIdx} className="space-y-1">
