@@ -9,7 +9,7 @@
   }
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars (6-8px width, transparent track, #D0D5DD thumb, #98A2B3 hover) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -21,11 +21,11 @@
 
 ::-webkit-scrollbar-thumb {
   @apply rounded-full transition-colors;
-  background-color: #EAECF0;
+  background-color: #D0D5DD;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #D0D5DD;
+  background-color: #98A2B3;
 }
 
 /* Focus Ring */
@@ -43,26 +43,26 @@
   @apply hover:border-gray-300;
 }
 
-/* Form Components - 8px radius */
+/* Master Form Inputs - 42px height, 8px radius, #D0D5DD border, #101828 text, #98A2B3 placeholder */
 .saas-input {
-  @apply w-full px-3.5 py-2 text-sm text-[#111827] bg-white border border-[#E4E7EC] rounded-[8px] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#FF8A1F]/20 focus:border-[#FF8A1F] transition-all;
+  @apply w-full h-[42px] px-3.5 text-sm text-[#101828] bg-white border border-[#D0D5DD] rounded-[8px] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#FF8A1F]/20 focus:border-[#FF8A1F] transition-all disabled:bg-[#F2F4F7];
 }
 
 .saas-label {
-  @apply block text-xs font-semibold text-[#344054] mb-1.5 uppercase tracking-wider;
+  @apply block text-[13px] font-semibold text-[#344054] mb-1.5;
 }
 
-/* Button Classes - 8px radius, compact & professional */
+/* Button Classes - 8px radius, 42px standard height */
 .btn-primary {
-  @apply inline-flex items-center justify-center px-3.5 py-2 text-xs font-semibold text-white bg-[#FF8A1F] hover:bg-[#EA7712] rounded-[8px] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#FF8A1F]/30;
+  @apply inline-flex items-center justify-center px-4 h-[42px] text-xs font-semibold text-white bg-[#FF8A1F] hover:bg-[#EA7712] rounded-[8px] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#FF8A1F]/30;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center px-3.5 py-2 text-xs font-semibold text-[#344054] bg-white border border-[#E4E7EC] hover:bg-[#F9FAFB] hover:border-gray-300 rounded-[8px] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-gray-200;
+  @apply inline-flex items-center justify-center px-4 h-[42px] text-xs font-semibold text-[#344054] bg-white border border-[#D0D5DD] hover:bg-[#F9FAFB] hover:border-gray-300 rounded-[8px] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-gray-200;
 }
 
 .btn-danger {
-  @apply inline-flex items-center justify-center px-3.5 py-2 text-xs font-semibold text-white bg-[#F04438] hover:bg-[#D92D20] rounded-[8px] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-red-500/30;
+  @apply inline-flex items-center justify-center px-4 h-[42px] text-xs font-semibold text-white bg-[#D92D20] hover:bg-[#B42318] rounded-[8px] active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-red-500/30;
 }
 
 .btn-ghost {
@@ -94,7 +94,7 @@
   @apply bg-[#F2F4F7] text-[#344054] border border-[#E4E7EC];
 }
 
-/* Table Design - Consistent System Across Modules */
+/* Table Design */
 .saas-table {
   @apply w-full text-left text-sm text-[#111827];
 }
@@ -111,12 +111,11 @@
   @apply bg-[#F9FAFB]/80;
 }
 
-/* Drawer & Modal Overlay */
+/* Overlay & Transitions */
 .drawer-backdrop {
-  @apply fixed inset-0 bg-gray-900/40 backdrop-blur-[2px] z-40 transition-opacity;
+  @apply fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[2px] z-50 transition-opacity;
 }
 
-/* Transitions */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }

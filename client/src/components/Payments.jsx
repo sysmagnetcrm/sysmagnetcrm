@@ -373,12 +373,15 @@ const Payments = () => {
         submitLabel="Record Payment"
         submitting={submitting}
         onSubmit={handleFormSubmit}
+        ariaLabel="Close record payment form"
       >
         {/* Section 1: Relational Account Selection */}
         <div className="space-y-4">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Relational Selection
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              ACCOUNT & INVOICE
+            </h4>
+          </div>
 
           <div>
             <label className="saas-label">Select Client Organization *</label>
@@ -397,7 +400,7 @@ const Payments = () => {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Invoice Number</label>
               <input
@@ -423,11 +426,13 @@ const Payments = () => {
 
         {/* Section 2: Invoice Balance Summary (Derived automatically) */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Invoice Financial Summary
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              INVOICE FINANCIAL SUMMARY
+            </h4>
+          </div>
 
-          <div className="bg-[#F9FAFB] border border-[#E4E7EC] rounded-[8px] p-3 space-y-2 text-xs">
+          <div className="bg-[#F9FAFB] border border-[#E4E7EC] rounded-[8px] p-3.5 space-y-2 text-xs">
             <div className="flex justify-between text-[#667085]">
               <span>Invoice Total:</span>
               <span className="font-semibold text-[#111827]">₹{invoiceTotalNum.toLocaleString('en-IN')}</span>
@@ -436,7 +441,7 @@ const Payments = () => {
               <span>Already Paid:</span>
               <span className="font-semibold text-[#12B76A]">₹{alreadyPaidNum.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between text-[#111827] font-bold pt-1.5 border-t border-[#E4E7EC]">
+            <div className="flex justify-between text-[#111827] font-bold pt-2 border-t border-[#E4E7EC]">
               <span>Remaining Balance:</span>
               <span className="text-[#FF8A1F]">₹{remainingBalance.toLocaleString('en-IN')}</span>
             </div>
@@ -445,29 +450,34 @@ const Payments = () => {
 
         {/* Section 3: Payment Entry Details */}
         <div className="space-y-4 pt-2">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Payment Details
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              PAYMENT DETAILS
+            </h4>
+          </div>
 
           <div>
             <label className="saas-label">Payment Amount (₹) *</label>
-            <input
-              type="number"
-              required
-              value={formData.paymentAmount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder="e.g. 10000"
-              className={`saas-input ${validationError ? 'border-[#F04438] focus:ring-[#F04438]/20' : ''}`}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">₹</span>
+              <input
+                type="number"
+                required
+                value={formData.paymentAmount}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                placeholder="10,000"
+                className={`saas-input pl-7 ${validationError ? 'border-[#F04438] focus:ring-[#F04438]/20' : ''}`}
+              />
+            </div>
             {validationError && (
-              <p className="text-[11px] font-semibold text-[#F04438] mt-1 flex items-center gap-1">
+              <p className="text-[12px] font-medium text-[#D92D20] mt-1.5 flex items-center gap-1">
                 <Icon icon="heroicons:exclamation-circle" className="w-3.5 h-3.5" />
                 <span>{validationError}</span>
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Payment Date *</label>
               <input
@@ -505,15 +515,23 @@ const Payments = () => {
               className="saas-input font-mono"
             />
           </div>
+        </div>
+
+        {/* Section 4: Notes */}
+        <div className="space-y-4 pt-2">
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              NOTES
+            </h4>
+          </div>
 
           <div>
-            <label className="saas-label">Notes & Remarks</label>
             <textarea
-              rows={2}
+              rows={4}
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Additional payment notes or receipt details..."
-              className="saas-input"
+              placeholder="Optional payment notes or receipt details..."
+              className="saas-input min-h-[110px] h-auto py-2.5"
             />
           </div>
         </div>

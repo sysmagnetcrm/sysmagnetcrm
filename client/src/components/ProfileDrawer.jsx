@@ -98,13 +98,15 @@ const ProfileDrawer = ({ user, onClose, onUpdate }) => {
   };
 
   return (
-    <motion.aside
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed right-0 top-0 h-full w-full md:w-[480px] bg-white dark:bg-brand-black shadow-2xl z-50 border-l border-brand-grey/10"
-    >
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[2px] z-50" onClick={onClose} />
+      <motion.aside
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="relative bg-white w-full sm:w-[560px] h-screen flex flex-col z-50 border-l border-[#E4E7EC] shadow-modal rounded-none"
+      >
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="relative h-32 bg-gradient-to-r from-brand-orange to-brand-yellow overflow-hidden">
@@ -300,6 +302,7 @@ const ProfileDrawer = ({ user, onClose, onUpdate }) => {
         </div>
       </div>
     </motion.aside>
+    </div>
   );
 };
 

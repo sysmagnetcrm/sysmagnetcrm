@@ -295,12 +295,15 @@ const Clients = ({
         submitLabel="Add Client"
         submitting={submitting}
         onSubmit={handleFormSubmit}
+        ariaLabel="Close add client form"
       >
         {/* Section 1: Company Information */}
         <div className="space-y-4">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Company Information
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              COMPANY INFORMATION
+            </h4>
+          </div>
 
           <div>
             <label className="saas-label">Company Name *</label>
@@ -314,7 +317,7 @@ const Clients = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Primary Contact *</label>
               <input
@@ -353,11 +356,13 @@ const Clients = ({
 
         {/* Section 2: Client Details */}
         <div className="space-y-4 pt-2">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Client Details
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              CLIENT DETAILS
+            </h4>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Account Status</label>
               <select
@@ -386,15 +391,23 @@ const Clients = ({
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Section 3: Additional Notes */}
+        <div className="space-y-4 pt-2">
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              ADDITIONAL NOTES
+            </h4>
+          </div>
 
           <div>
-            <label className="saas-label">Additional Notes</label>
             <textarea
-              rows={3}
+              rows={4}
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Important account notes or SLA details..."
-              className="saas-input"
+              className="saas-input min-h-[110px] h-auto py-2.5"
             />
           </div>
         </div>

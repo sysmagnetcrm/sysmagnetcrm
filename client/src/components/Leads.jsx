@@ -368,12 +368,15 @@ const Leads = ({
         submitLabel={editingLead ? "Update Lead" : "Create Lead"}
         submitting={submitting}
         onSubmit={handleFormSubmit}
+        ariaLabel="Close add lead form"
       >
         {/* Section 1: Company & Contact */}
         <div className="space-y-4">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Company & Contact Information
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              COMPANY & CONTACT
+            </h4>
+          </div>
 
           <div>
             <label className="saas-label">Company / Organization Name *</label>
@@ -387,7 +390,7 @@ const Leads = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Contact Person *</label>
               <input
@@ -426,11 +429,13 @@ const Leads = ({
 
         {/* Section 2: Lead Details */}
         <div className="space-y-4 pt-2">
-          <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider border-b border-[#E4E7EC] pb-1.5">
-            Lead Classification
-          </h4>
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              LEAD DETAILS
+            </h4>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Initial Status</label>
               <select
@@ -460,7 +465,7 @@ const Leads = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="saas-label">Interested Service</label>
               <select
@@ -476,25 +481,36 @@ const Leads = ({
             </div>
 
             <div>
-              <label className="saas-label">Estimated Value (₹)</label>
-              <input
-                type="number"
-                value={formData.value}
-                onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
-                placeholder="50000"
-                className="saas-input"
-              />
+              <label className="saas-label">Estimated Value</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#667085]">₹</span>
+                <input
+                  type="number"
+                  value={formData.value}
+                  onChange={(e) => setFormData(prev => ({ ...prev, value: e.target.value }))}
+                  placeholder="50,000"
+                  className="saas-input pl-7"
+                />
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Section 3: Notes */}
+        <div className="space-y-4 pt-2">
+          <div className="border-b border-[#E4E7EC] pb-2">
+            <h4 className="text-[13px] font-semibold text-[#344054]">
+              NOTES
+            </h4>
           </div>
 
           <div>
-            <label className="saas-label">Notes & Context</label>
             <textarea
-              rows={3}
+              rows={4}
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Additional background notes about this sales opportunity..."
-              className="saas-input"
+              placeholder="Optional context or background notes about this lead..."
+              className="saas-input min-h-[110px] h-auto py-2.5"
             />
           </div>
         </div>

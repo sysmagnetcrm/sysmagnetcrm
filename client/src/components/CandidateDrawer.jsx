@@ -41,13 +41,15 @@ const CandidateDrawer = ({ candidate, onClose, onApprove, onScheduleInterview, o
   };
 
   return (
-    <motion.aside
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white dark:bg-brand-black shadow-2xl z-50 border-l border-brand-grey/10"
-    >
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[2px] z-50" onClick={onClose} />
+      <motion.aside
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="relative bg-white w-full sm:w-[560px] h-screen flex flex-col z-50 border-l border-[#E4E7EC] shadow-modal rounded-none"
+      >
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-brand-grey/10 flex items-center justify-between bg-white/50 dark:bg-brand-black/50 backdrop-blur-sm">
@@ -266,6 +268,7 @@ const CandidateDrawer = ({ candidate, onClose, onApprove, onScheduleInterview, o
         </div>
       </div>
     </motion.aside>
+    </div>
   );
 };
 
