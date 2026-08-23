@@ -40,7 +40,7 @@ import StaffWorkboard from './components/StaffWorkboard';
 import AdminClientLogs from './components/AdminClientLogs';
 
 function AppContent() {
-  const { user, isAuthenticated, switchUser } = useAuth();
+  const { user, isAuthenticated, loading: authLoading, switchUser } = useAuth();
   const { theme } = useTheme();
 
   // UI State
@@ -553,6 +553,19 @@ function AppContent() {
         return <Dashboard onAddClient={() => setPanel('clients')} onAddCandidate={() => setPanel('recruitment')} onSelectTask={setSelectedTask} />;
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-[12px] bg-[#FF8A1F] text-white font-bold text-lg flex items-center justify-center animate-pulse shadow-subtle">
+            E
+          </div>
+          <p className="text-xs font-semibold text-gray-500">Loading Eron-CRM...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Login />;

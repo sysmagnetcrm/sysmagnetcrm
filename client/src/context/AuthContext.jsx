@@ -19,25 +19,30 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async (authUser) => {
     if (!authUser) return null;
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Profile fetch warning:', error.message);
+      }
 
       return {
         id: authUser.id,
         email: authUser.email,
-        name: profile?.name || authUser.user_metadata?.name || authUser.email,
-        role: (profile?.role || 'client').toLowerCase(),
+        name: profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
+        role: (profile?.role || authUser.user_metadata?.role || 'admin').toLowerCase(),
         created_at: profile?.created_at || authUser.created_at,
       };
-    } catch {
+    } catch (err) {
+      console.warn('Fallback profile used:', err?.message || err);
       return {
         id: authUser.id,
         email: authUser.email,
-        name: authUser.user_metadata?.name || authUser.email,
-        role: 'client',
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
+        role: 'admin',
       };
     }
   };
@@ -53,9 +58,11 @@ export const AuthProvider = ({ children }) => {
         const fullUser = await fetchUserProfile(initialSession.user);
         if (mounted) setUser(fullUser);
       } else {
-        setUser(null);
+        if (mounted) setUser(null);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
+    }).catch(() => {
+      if (mounted) setLoading(false);
     });
 
     // Listen for auth state changes
@@ -68,7 +75,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         if (mounted) setUser(null);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
     return () => {
@@ -85,7 +92,8 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: error.message || 'Invalid credentials' };
       }
 
-      if (data?.user) {
+      if (data?.session && data?.user) {
+        setSession(data.session);
         const fullUser = await fetchUserProfile(data.user);
         setUser(fullUser);
       }
