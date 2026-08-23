@@ -45,6 +45,7 @@ function AppContent() {
 
   // UI State
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [panel, setPanel] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
@@ -580,6 +581,8 @@ function AppContent() {
         <Sidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
+          isCollapsed={isSidebarCollapsed}
+          setIsCollapsed={setIsSidebarCollapsed}
           panel={panel}
           setPanel={setPanel}
         />
