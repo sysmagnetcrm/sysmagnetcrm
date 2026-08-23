@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useAuth } from '../context/AuthContext';
+import { useUIPreferences } from '../context/UIPreferencesContext';
 
 const Sidebar = ({
   sidebarOpen,
   setSidebarOpen,
-  isCollapsed,
-  setIsCollapsed,
   panel,
   setPanel,
 }) => {
   const { user } = useAuth();
+  const {
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    sidebarSections,
+    toggleSection,
+  } = useUIPreferences();
+
   const role = (user?.role || 'client').toLowerCase();
 
-  // Navigation Items Grouped by Categories
+  // Navigation Groups
   const navigationGroups = [
     {
       title: null, // Overview group (always visible at top)
@@ -23,6 +29,7 @@ const Sidebar = ({
     },
     {
       title: 'SALES',
+      key: 'sales',
       items: [
         { id: 'leads', label: 'Leads', icon: 'heroicons:user-group', roles: ['admin', 'sales', 'digital_marketer'] },
         { id: 'clients', label: 'Clients', icon: 'heroicons:building-office-2', roles: ['admin', 'sales', 'hr', 'finance'] },
@@ -31,6 +38,7 @@ const Sidebar = ({
     },
     {
       title: 'OPERATIONS',
+      key: 'operations',
       items: [
         { id: 'tasks', label: 'Tasks', icon: 'heroicons:clipboard-document-check', roles: ['admin', 'sales', 'developer', 'hr', 'digital_marketer'] },
         { id: 'admin_tasks', label: 'Projects', icon: 'heroicons:folder-open', roles: ['admin', 'developer'] },
@@ -40,6 +48,7 @@ const Sidebar = ({
     },
     {
       title: 'PEOPLE',
+      key: 'people',
       items: [
         { id: 'employees', label: 'Employees', icon: 'heroicons:users', roles: ['admin', 'hr'] },
         { id: 'attendance', label: 'Attendance', icon: 'heroicons:clock', roles: ['admin', 'hr', 'developer', 'sales'] },
@@ -49,6 +58,7 @@ const Sidebar = ({
     },
     {
       title: 'SUPPORT',
+      key: 'support',
       items: [
         { id: 'portal_manager', label: 'Tickets', icon: 'heroicons:ticket', roles: ['admin', 'sales', 'developer', 'hr'] },
         { id: 'client_portal', label: 'My Portal', icon: 'heroicons:rectangle-group', roles: ['client'] },
@@ -56,12 +66,14 @@ const Sidebar = ({
     },
     {
       title: 'ANALYTICS',
+      key: 'analytics',
       items: [
         { id: 'reports', label: 'Reports', icon: 'heroicons:chart-bar', roles: ['admin', 'sales', 'finance'] },
       ]
     },
     {
       title: 'ADMIN',
+      key: 'admin',
       items: [
         { id: 'users', label: 'Users', icon: 'heroicons:user-circle', roles: ['admin'] },
         { id: 'profile', label: 'Settings', icon: 'heroicons:cog-6-tooth', roles: ['admin', 'sales', 'developer', 'hr', 'finance', 'client', 'digital_marketer'] },
@@ -69,36 +81,16 @@ const Sidebar = ({
     }
   ];
 
-  // State to track accordion open/collapsed sections
-  const [collapsedCategories, setCollapsedCategories] = useState({});
-
-  // Rule: Auto-expand section containing current active page, preserve open state
+  // Auto-expand section containing active page if currently collapsed
   useEffect(() => {
     navigationGroups.forEach((group) => {
-      if (group.title && group.items.some(item => item.id === panel)) {
-        setCollapsedCategories(prev => ({
-          ...prev,
-          [group.title]: false // false = expanded (open)
-        }));
+      if (group.key && group.items.some(item => item.id === panel)) {
+        if (sidebarSections[group.key] === false) {
+          toggleSection(group.key);
+        }
       }
     });
   }, [panel]);
-
-  const toggleCategory = (categoryTitle) => {
-    // Check if active item is inside this category
-    const group = navigationGroups.find(g => g.title === categoryTitle);
-    const containsActive = group?.items.some(item => item.id === panel);
-
-    // Rule: Do NOT allow active category to collapse if current active page is inside it
-    if (containsActive && !collapsedCategories[categoryTitle]) {
-      return;
-    }
-
-    setCollapsedCategories(prev => ({
-      ...prev,
-      [categoryTitle]: !prev[categoryTitle]
-    }));
-  };
 
   const handleNavClick = (itemId) => {
     setPanel(itemId);
@@ -123,21 +115,21 @@ const Sidebar = ({
         className={`fixed lg:static top-0 left-0 bottom-0 z-40 bg-white border-r border-[#E4E7EC] flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${
-          isCollapsed ? 'lg:w-[68px]' : 'lg:w-[240px]'
+          sidebarCollapsed ? 'lg:w-[68px]' : 'lg:w-[240px]'
         } w-[240px]`}
       >
         {/* Brand Header & Toggle */}
         <div className={`h-16 px-4 flex items-center border-b border-[#E4E7EC] ${
-          isCollapsed ? 'lg:justify-center justify-between' : 'justify-between'
+          sidebarCollapsed ? 'lg:justify-center justify-between' : 'justify-between'
         }`}>
-          {isCollapsed ? (
+          {sidebarCollapsed ? (
             /* Collapsed Header */
             <div className="hidden lg:flex flex-col items-center gap-1.5 py-1">
               <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base">
                 E
               </div>
               <button
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => setSidebarCollapsed(false)}
                 className="group relative p-1 text-[#667085] hover:text-[#111827] hover:bg-[#F2F4F7] rounded-[6px] transition-colors"
                 title="Expand sidebar"
                 aria-label="Expand sidebar"
@@ -163,7 +155,7 @@ const Sidebar = ({
 
               {/* Desktop Collapse Toggle */}
               <button
-                onClick={() => setIsCollapsed(true)}
+                onClick={() => setSidebarCollapsed(true)}
                 className="hidden lg:flex p-1.5 text-[#667085] hover:text-[#111827] hover:bg-[#F2F4F7] rounded-[6px] transition-colors group relative"
                 title="Collapse sidebar"
                 aria-label="Collapse sidebar"
@@ -192,37 +184,37 @@ const Sidebar = ({
             const allowedItems = group.items.filter(item => item.roles.includes(role));
             if (allowedItems.length === 0) return null;
 
-            const isGroupCollapsed = !!collapsedCategories[group.title];
+            const isSectionExpanded = group.key ? (sidebarSections[group.key] !== false) : true;
             const containsActive = group.title && group.items.some(item => item.id === panel);
 
             return (
               <div key={gIdx} className="space-y-1">
                 {/* Category Header */}
                 {group.title && (
-                  <div className={isCollapsed ? 'hidden lg:block' : ''}>
+                  <div className={sidebarCollapsed ? 'hidden lg:block' : ''}>
                     <button
-                      onClick={() => toggleCategory(group.title)}
-                      disabled={containsActive && !isGroupCollapsed}
+                      onClick={() => toggleCategorySection(group.key)}
+                      aria-expanded={isSectionExpanded}
                       className={`w-full flex items-center justify-between px-2.5 py-1 text-[11px] font-semibold text-[#98A2B3] uppercase tracking-wider transition-colors group ${
-                        containsActive ? 'cursor-default text-[#D96F0B] font-bold' : 'hover:text-[#344054] cursor-pointer'
-                      } ${isCollapsed ? 'lg:hidden' : ''}`}
+                        containsActive ? 'text-[#D96F0B] font-bold' : 'hover:text-[#344054] cursor-pointer'
+                      } ${sidebarCollapsed ? 'lg:hidden' : ''}`}
                     >
                       <span className="truncate">{group.title}</span>
                       <Icon
-                        icon={isGroupCollapsed ? 'heroicons:chevron-down' : 'heroicons:chevron-up'}
-                        className={`w-3.5 h-3.5 transition-transform ${containsActive ? 'opacity-40' : 'opacity-60 group-hover:opacity-100'}`}
+                        icon={isSectionExpanded ? 'heroicons:chevron-up' : 'heroicons:chevron-down'}
+                        className={`w-3.5 h-3.5 transition-transform ${containsActive ? 'opacity-70' : 'opacity-60 group-hover:opacity-100'}`}
                       />
                     </button>
 
                     {/* Divider line in collapsed mode */}
-                    {isCollapsed && (
+                    {sidebarCollapsed && (
                       <div className="hidden lg:block my-2 border-t border-[#E4E7EC]" />
                     )}
                   </div>
                 )}
 
                 {/* Child Menu Items */}
-                {(!isGroupCollapsed || isCollapsed) && (
+                {(isSectionExpanded || sidebarCollapsed) && (
                   <div className="space-y-1">
                     {allowedItems.map((item) => {
                       const isActive = panel === item.id;
@@ -231,7 +223,7 @@ const Sidebar = ({
                           <button
                             onClick={() => handleNavClick(item.id)}
                             className={`w-full flex items-center ${
-                              isCollapsed ? 'lg:justify-center justify-start px-2.5' : 'px-3'
+                              sidebarCollapsed ? 'lg:justify-center justify-start px-2.5' : 'px-3'
                             } py-2 rounded-[8px] text-xs font-medium transition-all ${
                               isActive
                                 ? 'bg-[#FFF4E8] text-[#D96F0B] font-semibold border-l-[3px] border-[#FF8A1F]'
@@ -242,13 +234,13 @@ const Sidebar = ({
                               icon={item.icon}
                               className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#FF8A1F]' : 'text-[#667085] group-hover/item:text-[#111827]'}`}
                             />
-                            <span className={`truncate ml-3 ${isCollapsed ? 'lg:hidden' : ''}`}>
+                            <span className={`truncate ml-3 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
                               {item.label}
                             </span>
                           </button>
 
                           {/* Hover Tooltip in Collapsed Desktop Mode */}
-                          {isCollapsed && (
+                          {sidebarCollapsed && (
                             <div className="hidden lg:group-hover/item:flex absolute left-full ml-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#111827] text-white text-xs font-medium rounded-[6px] shadow-lg z-50 whitespace-nowrap pointer-events-none items-center gap-1.5 animate-fade-fast">
                               <span>{item.label}</span>
                               {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#FF8A1F]" />}
@@ -266,11 +258,11 @@ const Sidebar = ({
 
         {/* User Profile Footer */}
         <div className="p-2.5 border-t border-[#E4E7EC] bg-[#F9FAFB]/50">
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'lg:justify-center px-1' : 'px-2'} py-1`}>
+          <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'lg:justify-center px-1' : 'px-2'} py-1`}>
             <div className="w-7 h-7 rounded-full bg-orange-100 text-[#FF8A1F] font-bold flex items-center justify-center text-xs shrink-0 border border-orange-200">
               {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
-            {!isCollapsed && (
+            {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-[#111827] truncate">
                   {user?.name || 'Admin'}
@@ -285,6 +277,11 @@ const Sidebar = ({
       </aside>
     </>
   );
+
+  function toggleCategorySection(groupKey) {
+    if (!groupKey) return;
+    toggleSection(groupKey);
+  }
 };
 
 export default Sidebar;

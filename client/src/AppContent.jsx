@@ -39,17 +39,34 @@ import AdminClientTasks from './components/AdminClientTasks';
 import StaffWorkboard from './components/StaffWorkboard';
 import AdminClientLogs from './components/AdminClientLogs';
 
+import { useUIPreferences } from './context/UIPreferencesContext';
+
 function AppContent() {
   const { user, isAuthenticated, loading: authLoading, switchUser } = useAuth();
   const { theme } = useTheme();
+  const { lastRoute, setLastRoute, initialized: prefsInitialized } = useUIPreferences();
 
   // UI State
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [panel, setPanel] = useState('dashboard');
+  const [panel, setPanelState] = useState('dashboard');
   const [toasts, setToasts] = useState([]);
   const [leadFilters, setLeadFilters] = useState({});
+
+  // Restore panel from lastRoute when UI preferences finish initializing
+  useEffect(() => {
+    if (prefsInitialized && lastRoute) {
+      const cleanPanel = lastRoute.replace('/', '').trim();
+      if (cleanPanel) {
+        setPanelState(cleanPanel);
+      }
+    }
+  }, [prefsInitialized, lastRoute]);
+
+  const setPanel = (newPanel) => {
+    setPanelState(newPanel);
+    setLastRoute(`/${newPanel}`);
+  };
 
   // Selected items for drawers
   const [selectedClient, setSelectedClient] = useState(null);

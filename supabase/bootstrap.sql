@@ -372,16 +372,24 @@ CREATE POLICY "client_tasks_write"  ON public.client_tasks FOR INSERT TO authent
 CREATE POLICY "client_tasks_update" ON public.client_tasks FOR UPDATE TO authenticated USING (true);
 
 -- ══════════════════════════════════════════════════════════════
--- 15. SEED: Link your admin Auth user to public.users
---
--- After running this script, uncomment the block below and run
--- it separately. It auto-finds your user by email and sets
--- their role to 'admin'.
+-- 15. USER UI PREFERENCES
 -- ══════════════════════════════════════════════════════════════
--- INSERT INTO public.users (id, name, email, role)
--- SELECT id, email, email, 'admin'
--- FROM auth.users
--- WHERE email = 'admin@eron-crm.com'
--- ON CONFLICT (id) DO UPDATE SET role = 'admin', name = EXCLUDED.name;
+CREATE TABLE IF NOT EXISTS public.user_ui_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  sidebar_collapsed BOOLEAN NOT NULL DEFAULT false,
+  sidebar_sections JSONB NOT NULL DEFAULT '{"sales": true, "operations": true, "people": true, "support": true}'::jsonb,
+  last_route TEXT DEFAULT '/dashboard',
+  preferences JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
--- ✅ Done — 14 tables created fresh with RLS enabled.
+ALTER TABLE public.user_ui_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "ui_preferences_select" ON public.user_ui_preferences FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "ui_preferences_insert" ON public.user_ui_preferences FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "ui_preferences_update" ON public.user_ui_preferences FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- ✅ Done — 15 tables created fresh with RLS enabled.
+
