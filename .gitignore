@@ -1,0 +1,29 @@
+# Node
+node_modules/
+
+# Build artifacts
+client/dist/
+*.log
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env and secrets
+.env
+client/.env*
+server/.env*
+
+# Local databases and artifacts
+*.db
+*.db-shm
+*.db-wal
+server/database.sqlite
+
+# Archives and dumps
+*.zip
+*.7z
+*.tar
+*.tar.gz

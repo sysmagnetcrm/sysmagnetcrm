@@ -1,0 +1,16 @@
+# Env and secrets
+.env
+.env.*
+
+# Local sqlite databases
+*.db
+*.db-shm
+*.db-wal
+database.sqlite
+crm.db
+
+# Node
+node_modules/
+
+# Logs
+*.log
