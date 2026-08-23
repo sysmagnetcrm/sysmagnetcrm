@@ -6,31 +6,31 @@ const Toast = ({ toasts = [], remove }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'success':
-        return <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-500" />;
+        return <Icon icon="heroicons:check-circle" className="w-5 h-5 text-[#12B76A]" />;
       case 'error':
-        return <Icon icon="mdi:alert-circle" className="w-5 h-5 text-red-500" />;
+        return <Icon icon="heroicons:exclamation-circle" className="w-5 h-5 text-[#D92D20]" />;
       case 'warning':
-        return <Icon icon="mdi:alert" className="w-5 h-5 text-yellow-500" />;
+        return <Icon icon="heroicons:exclamation-triangle" className="w-5 h-5 text-[#F79009]" />;
       default:
-        return <Icon icon="mdi:information" className="w-5 h-5 text-blue-500" />;
+        return <Icon icon="heroicons:information-circle" className="w-5 h-5 text-[#175CD3]" />;
     }
   };
 
   const getBorderColor = (type) => {
     switch (type) {
       case 'success':
-        return 'border-green-200 dark:border-green-800';
+        return 'border-[#ABEFC6] bg-[#ECFDF3]';
       case 'error':
-        return 'border-red-200 dark:border-red-800';
+        return 'border-[#FECDCA] bg-[#FEF3F2]';
       case 'warning':
-        return 'border-yellow-200 dark:border-yellow-800';
+        return 'border-[#FEDF89] bg-[#FFFAEB]';
       default:
-        return 'border-blue-200 dark:border-blue-800';
+        return 'border-[#BDD6FF] bg-[#F0F5FF]';
     }
   };
 
   return (
-    <div className="fixed right-4 top-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed right-4 top-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
@@ -39,28 +39,34 @@ const Toast = ({ toasts = [], remove }) => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.95 }}
             className={`
-              px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-brand-black
-              border ${getBorderColor(toast.type)}
-              backdrop-blur-sm
+              p-3.5 rounded-[10px] shadow-lg bg-white border ${getBorderColor(toast.type)}
+              pointer-events-auto transition-all
             `}
           >
             <div className="flex items-start gap-3">
-              {getIcon(toast.type)}
+              <div className="shrink-0 mt-0.5">{getIcon(toast.type)}</div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-brand-black dark:text-brand-white text-sm">
+                <p className="font-semibold text-[#101828] text-xs">
                   {toast.title}
-                </div>
+                </p>
                 {toast.message && (
-                  <div className="text-xs text-brand-grey mt-1 leading-relaxed">
+                  <p className="text-[11px] text-[#475467] mt-0.5 leading-relaxed">
                     {toast.message}
-                  </div>
+                  </p>
+                )}
+                {toast.referenceId && (
+                  <p className="text-[10px] font-mono text-[#667085] mt-1">
+                    Ref: {toast.referenceId}
+                  </p>
                 )}
               </div>
               <button
+                type="button"
                 onClick={() => remove(toast.id)}
-                className="flex-shrink-0 p-1 rounded-lg hover:bg-brand-grey/10 transition-colors text-brand-grey"
+                className="shrink-0 p-1 rounded hover:bg-black/5 text-[#667085] transition-colors"
+                aria-label="Dismiss toast"
               >
-                <Icon icon="mdi:close" className="w-4 h-4" />
+                <Icon icon="heroicons:x-mark" className="w-4 h-4" />
               </button>
             </div>
           </motion.div>

@@ -37,9 +37,10 @@ import ClientPortal from './components/ClientPortal';
 import PortalManager from './components/PortalManager';
 import AdminClientTasks from './components/AdminClientTasks';
 import StaffWorkboard from './components/StaffWorkboard';
-import AdminClientLogs from './components/AdminClientLogs';
-
+import ModuleErrorBoundary from './components/ModuleErrorBoundary';
+import OfflineBanner from './components/OfflineBanner';
 import { useUIPreferences } from './context/UIPreferencesContext';
+import { normalizeError } from './utils/errorHandler';
 
 function AppContent() {
   const { user, isAuthenticated, loading: authLoading, switchUser } = useAuth();
@@ -190,7 +191,17 @@ function AppContent() {
   // Toast management
   const addToast = (toast) => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, ...toast }]);
+    let toastPayload = { id, ...toast };
+
+    if (toast.error || toast.type === 'error') {
+      const appErr = toast.error?.appError || normalizeError(toast.error || toast.message || toast.title);
+      toastPayload.title = toast.title || appErr.userMessage;
+      toastPayload.message = toast.message || appErr.actionMessage;
+      toastPayload.referenceId = appErr.referenceId;
+      toastPayload.type = 'error';
+    }
+
+    setToasts(prev => [...prev, toastPayload]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 6000);
@@ -592,6 +603,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen w-full bg-[#F8F9FB] text-[#111827] font-sans flex flex-col">
+      <OfflineBanner />
       <Toast toasts={toasts} remove={removeToast} />
 
       <div className="flex-1 flex w-full">
@@ -622,19 +634,21 @@ function AppContent() {
             onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           />
 
-          {/* Main Content View */}
+          {/* Main Content View with Module Isolation */}
           <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={panel}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.15 }}
-              >
-                {renderContent()}
-              </motion.div>
-            </AnimatePresence>
+            <ModuleErrorBoundary key={panel} moduleName={panel}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={panel}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {renderContent()}
+                </motion.div>
+              </AnimatePresence>
+            </ModuleErrorBoundary>
           </main>
         </div>
       </div>

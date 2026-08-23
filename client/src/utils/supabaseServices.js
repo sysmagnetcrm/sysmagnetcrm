@@ -1,19 +1,45 @@
 import { supabase } from './supabaseClient';
 import { sanitizeSearchTerm } from './sanitize';
+import { normalizeError } from './errorHandler';
 
 // Helper to standardise return format matching axios responses { data: ... }
-const wrap = async (promise) => {
-  const { data, error } = await promise;
-  if (error) throw new Error(error.message);
-  return { data };
+const wrap = async (promise, context = {}) => {
+  try {
+    const { data, error } = await promise;
+    if (error) {
+      const normalized = normalizeError(error, context);
+      const errObj = new Error(normalized.userMessage);
+      errObj.appError = normalized;
+      throw errObj;
+    }
+    return { data };
+  } catch (e) {
+    if (e.appError) throw e;
+    const normalized = normalizeError(e, context);
+    const errObj = new Error(normalized.userMessage);
+    errObj.appError = normalized;
+    throw errObj;
+  }
 };
 
 // Helper for invoking Edge Functions
-const invokeFunction = async (functionName, body) => {
-  const { data, error } = await supabase.functions.invoke(functionName, { body });
-  if (error) throw new Error(error.message || 'Edge function error');
-  if (data?.error) throw new Error(data.error);
-  return { data };
+const invokeFunction = async (functionName, body, context = {}) => {
+  try {
+    const { data, error } = await supabase.functions.invoke(functionName, { body });
+    if (error || data?.error) {
+      const normalized = normalizeError(error || data?.error, { module: 'edge_function', action: functionName, ...context });
+      const errObj = new Error(normalized.userMessage);
+      errObj.appError = normalized;
+      throw errObj;
+    }
+    return { data };
+  } catch (e) {
+    if (e.appError) throw e;
+    const normalized = normalizeError(e, { module: 'edge_function', action: functionName, ...context });
+    const errObj = new Error(normalized.userMessage);
+    errObj.appError = normalized;
+    throw errObj;
+  }
 };
 
 // 1. LEADS API
