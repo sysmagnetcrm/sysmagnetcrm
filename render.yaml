@@ -16,10 +16,6 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
     envVars:
       - key: VITE_SUPABASE_URL
         value: https://phmwijxrqrzykfcaljwm.supabase.co
