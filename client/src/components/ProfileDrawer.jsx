@@ -46,9 +46,9 @@ const ProfileDrawer = ({ user, onClose, onUpdate }) => {
     });
   }, [user?.id, initialExtras]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
     if (onClose) onClose();
+    await logout();
   };
 
   const handleSave = async () => {

@@ -142,9 +142,33 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Supabase signOut warning:', err?.message || err);
+    } finally {
+      setUser(null);
+      setSession(null);
+      try {
+        const themeVal = localStorage.getItem('eron-crm:theme') || localStorage.getItem('eron_theme');
+        localStorage.removeItem('eron_user');
+        localStorage.removeItem('eron_profile_extras');
+        
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase'))) {
+            localStorage.removeItem(key);
+          }
+        }
+        
+        if (themeVal) {
+          localStorage.setItem('eron-crm:theme', themeVal);
+          localStorage.setItem('eron_theme', themeVal);
+        }
+      } catch (e) {
+        console.warn('Storage cleanup error during logout:', e);
+      }
+    }
   };
 
   const switchUser = (newUser) => {

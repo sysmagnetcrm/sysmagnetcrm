@@ -363,11 +363,12 @@ const TopBar = ({
 
                 {/* Logout Button */}
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={async () => {
                     setShowUserMenu(false);
-                    logout();
+                    await logout();
                   }}
-                  className="w-full text-left px-4 py-2 text-xs text-[#F04438] hover:bg-[#FEF3F2] flex items-center gap-2.5 font-semibold transition-colors"
+                  className="w-full text-left px-4 py-2 text-xs text-[#F04438] hover:bg-[#FEF3F2] dark:hover:bg-red-950/30 flex items-center gap-2.5 font-semibold transition-colors cursor-pointer"
                 >
                   <Icon icon="heroicons:arrow-right-on-rectangle" className="w-4 h-4 text-[#F04438]" />
                   <span>Sign out</span>
