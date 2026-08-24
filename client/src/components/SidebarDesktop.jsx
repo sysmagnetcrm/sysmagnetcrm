@@ -18,11 +18,11 @@ const SidebarDesktop = ({ current, onNavigate }) => {
     <motion.aside
       initial={{ x: -40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-white/80 dark:bg-brand-black/80 backdrop-blur-xl border-r border-brand-grey/10 text-brand-black dark:text-brand-white"
+      className="hidden lg:flex lg:flex-col lg:w-64 xl:w-72 bg-white dark:bg-[#14171D] backdrop-blur-xl border-r border-[#E4E7EC] dark:border-[#2B313C] text-[#101828] dark:text-white"
     >
-      <div className="px-6 py-5 border-b border-brand-grey/10">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-brand-grey font-bold">Sysdevcode CRM</p>
-        <h1 className="mt-2 text-2xl font-bold text-brand-black dark:text-brand-white">Control Center</h1>
+      <div className="px-6 py-5 border-b border-[#E4E7EC] dark:border-[#2B313C]">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-[#667085] dark:text-gray-400 font-bold">Sysdevcode CRM</p>
+        <h1 className="mt-2 text-2xl font-bold text-[#101828] dark:text-white">Control Center</h1>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">

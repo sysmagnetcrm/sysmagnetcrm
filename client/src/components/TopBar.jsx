@@ -138,18 +138,18 @@ const TopBar = ({
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-[#E4E7EC] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20">
+      <header className="h-16 bg-white dark:bg-[#14171D] border-b border-[#E4E7EC] dark:border-[#2B313C] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
         {/* Left: Mobile Sidebar Toggle & Page Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden text-[#667085] hover:text-[#111827] p-1.5 rounded-[8px] hover:bg-[#F2F4F7] transition-colors"
+            className="lg:hidden text-[#667085] dark:text-gray-300 hover:text-[#111827] dark:hover:text-white p-1.5 rounded-[8px] hover:bg-[#F2F4F7] dark:hover:bg-[#1E232C] transition-colors"
             aria-label="Toggle Navigation"
           >
             <Icon icon="heroicons:bars-3" className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-base md:text-lg font-bold text-[#111827] leading-tight">
+            <h1 className="text-base md:text-lg font-bold text-[#111827] dark:text-white leading-tight">
               {titlesMap[panel] || 'Overview'}
             </h1>
           </div>
@@ -159,13 +159,13 @@ const TopBar = ({
         <div className="hidden md:flex flex-1 max-w-md mx-6">
           <button
             onClick={() => setShowSearchModal(true)}
-            className="w-full flex items-center justify-between px-3.5 py-1.5 text-xs text-[#98A2B3] bg-[#F9FAFB] border border-[#E4E7EC] rounded-[8px] hover:border-gray-300 hover:bg-white transition-all"
+            className="w-full flex items-center justify-between px-3.5 py-1.5 text-xs text-[#98A2B3] dark:text-[#7C8799] bg-[#F9FAFB] dark:bg-[#1E232C] border border-[#E4E7EC] dark:border-[#343B48] rounded-[8px] hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-[#202631] transition-all"
           >
             <div className="flex items-center gap-2">
-              <Icon icon="heroicons:magnifying-glass" className="w-4 h-4 text-[#98A2B3]" />
+              <Icon icon="heroicons:magnifying-glass" className="w-4 h-4 text-[#98A2B3] dark:text-[#7C8799]" />
               <span>Search leads, clients, tasks...</span>
             </div>
-            <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-[#667085] bg-white border border-[#E4E7EC] rounded shadow-2xs">
+            <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-[#667085] dark:text-gray-300 bg-white dark:bg-[#14171D] border border-[#E4E7EC] dark:border-[#343B48] rounded shadow-2xs">
               Ctrl K
             </kbd>
           </button>
@@ -195,16 +195,16 @@ const TopBar = ({
               </button>
 
               {showCreateDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 py-1 animate-fade-fast">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#171A21] rounded-[10px] border border-[#E4E7EC] dark:border-[#2B313C] shadow-dropdown z-50 py-1 animate-fade-fast">
                   {canCreateLeads && (
                     <button
                       onClick={() => {
                         setShowCreateDropdown(false);
                         setPanel('leads');
                       }}
-                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] hover:bg-[#FFF4E8] hover:text-[#D96F0B] flex items-center gap-2.5 transition-colors"
+                      className="w-full text-left px-3.5 py-2 text-xs font-medium text-[#344054] dark:text-gray-200 hover:bg-[#FFF4E8] dark:hover:bg-brand-orange/15 hover:text-[#D96F0B] dark:hover:text-brand-orange flex items-center gap-2.5 transition-colors"
                     >
-                      <Icon icon="heroicons:user-group" className="w-4 h-4 text-[#667085]" />
+                      <Icon icon="heroicons:user-group" className="w-4 h-4 text-[#667085] dark:text-gray-400" />
                       <span>New Lead</span>
                     </button>
                   )}
@@ -264,19 +264,19 @@ const TopBar = ({
 
             {/* Notifications Popover */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 p-4 animate-fade-fast">
-                <div className="flex items-center justify-between pb-2.5 border-b border-[#E4E7EC] mb-2">
-                  <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider">Notifications</h4>
-                  <span className="text-[11px] font-semibold text-[#D96F0B] bg-[#FFF4E8] px-2 py-0.5 rounded-full">{unreadCount} new</span>
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#171A21] rounded-[10px] border border-[#E4E7EC] dark:border-[#2B313C] shadow-dropdown z-50 p-4 animate-fade-fast">
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#E4E7EC] dark:border-[#2B313C] mb-2">
+                  <h4 className="text-xs font-bold text-[#111827] dark:text-white uppercase tracking-wider">Notifications</h4>
+                  <span className="text-[11px] font-semibold text-[#D96F0B] bg-[#FFF4E8] dark:bg-brand-orange/15 dark:text-brand-orange px-2 py-0.5 rounded-full">{unreadCount} new</span>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <p className="text-xs text-[#98A2B3] text-center py-6">No recent notifications</p>
+                    <p className="text-xs text-[#98A2B3] dark:text-gray-400 text-center py-6">No recent notifications</p>
                   ) : (
                     notifications.map((n) => (
-                      <div key={n.id} className="p-2.5 rounded-[8px] bg-[#F9FAFB] hover:bg-[#F2F4F7] text-xs transition-colors">
-                        <p className="font-semibold text-[#111827]">{n.title}</p>
-                        <p className="text-[#667085] mt-0.5">{n.message}</p>
+                      <div key={n.id} className="p-2.5 rounded-[8px] bg-[#F9FAFB] dark:bg-[#1E232C] hover:bg-[#F2F4F7] dark:hover:bg-[#202631] text-xs transition-colors">
+                        <p className="font-semibold text-[#111827] dark:text-white">{n.title}</p>
+                        <p className="text-[#667085] dark:text-gray-300 mt-0.5">{n.message}</p>
                       </div>
                     ))
                   )}
@@ -289,12 +289,12 @@ const TopBar = ({
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(prev => !prev)}
-              className="flex items-center gap-2 p-1 rounded-[8px] hover:bg-[#F9FAFB] border border-transparent hover:border-[#E4E7EC] transition-all"
+              className="flex items-center gap-2 p-1 rounded-[8px] hover:bg-[#F9FAFB] dark:hover:bg-[#1E232C] border border-transparent hover:border-[#E4E7EC] dark:hover:border-[#2B313C] transition-all"
             >
-              <div className="w-7 h-7 rounded-full bg-orange-100 text-[#FF8A1F] font-bold text-xs flex items-center justify-center border border-orange-200 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-orange-100 dark:bg-brand-orange/20 text-[#FF8A1F] font-bold text-xs flex items-center justify-center border border-orange-200 dark:border-brand-orange/40 shrink-0">
                 {getDisplayName().charAt(0).toUpperCase()}
               </div>
-              <span className="hidden sm:inline text-xs font-semibold text-[#111827]">
+              <span className="hidden sm:inline text-xs font-semibold text-[#111827] dark:text-white">
                 {getDisplayName()}
               </span>
               <Icon icon="heroicons:chevron-down" className="w-3.5 h-3.5 text-[#98A2B3]" />
@@ -302,12 +302,12 @@ const TopBar = ({
 
             {/* Structured User Profile Dropdown Menu */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-[10px] border border-[#E4E7EC] shadow-dropdown z-50 py-2 animate-fade-fast">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#171A21] rounded-[10px] border border-[#E4E7EC] dark:border-[#2B313C] shadow-dropdown z-50 py-2 animate-fade-fast">
                 {/* Header Profile Summary */}
-                <div className="px-4 py-2.5 border-b border-[#E4E7EC] mb-1">
-                  <p className="text-sm font-bold text-[#111827]">{getDisplayName()}</p>
-                  <p className="text-xs text-[#667085] truncate">{user?.email || 'admin@sysdevcode.com'}</p>
-                  <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#D96F0B] bg-[#FFF4E8] rounded uppercase border border-[#FEDF89]/60">
+                <div className="px-4 py-2.5 border-b border-[#E4E7EC] dark:border-[#2B313C] mb-1">
+                  <p className="text-sm font-bold text-[#111827] dark:text-white">{getDisplayName()}</p>
+                  <p className="text-xs text-[#667085] dark:text-gray-400 truncate">{user?.email || 'admin@sysdevcode.com'}</p>
+                  <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#D96F0B] dark:text-brand-orange bg-[#FFF4E8] dark:bg-brand-orange/15 rounded uppercase border border-[#FEDF89]/60 dark:border-brand-orange/30">
                     Role: {user?.role || 'Admin'}
                   </span>
                 </div>
@@ -382,10 +382,10 @@ const TopBar = ({
       {showSearchModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
           <div className="drawer-backdrop" onClick={() => setShowSearchModal(false)} />
-          <div className="relative bg-white rounded-[16px] border border-[#E4E7EC] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
-            <div className="p-3 border-b border-[#E4E7EC] flex items-center gap-2 relative">
+          <div className="relative bg-white dark:bg-[#171A21] rounded-[16px] border border-[#E4E7EC] dark:border-[#2B313C] shadow-modal w-full max-w-xl overflow-hidden z-50 animate-fade-fast">
+            <div className="p-3 border-b border-[#E4E7EC] dark:border-[#2B313C] flex items-center gap-2 relative">
               <div className="input-leading-icon">
-                <Icon icon="heroicons:magnifying-glass" className="w-5 h-5" />
+                <Icon icon="heroicons:magnifying-glass" className="w-5 h-5 text-[#98A2B3] dark:text-[#7C8799]" />
               </div>
               <input
                 ref={searchInputRef}
@@ -393,11 +393,11 @@ const TopBar = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search leads, clients, tasks..."
-                className="saas-input saas-input-icon w-full border-none focus:ring-0 text-sm"
+                className="saas-input saas-input-icon w-full border-none focus:ring-0 text-sm bg-transparent text-[#111827] dark:text-white placeholder-[#98A2B3] dark:placeholder-[#7C8799]"
               />
               <button
                 onClick={() => setShowSearchModal(false)}
-                className="text-[10px] font-semibold text-[#667085] hover:text-[#111827] px-2 py-1 rounded bg-[#F2F4F7]"
+                className="text-[10px] font-semibold text-[#667085] dark:text-gray-300 hover:text-[#111827] dark:hover:text-white px-2 py-1 rounded bg-[#F2F4F7] dark:bg-[#1E232C]"
               >
                 ESC
               </button>

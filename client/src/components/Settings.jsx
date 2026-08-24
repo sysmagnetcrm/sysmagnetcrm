@@ -477,39 +477,47 @@ const Settings = ({ userRole = 'sales', onToast }) => {
               {activeTab === 'appearance' && (
                 <div className="space-y-6 max-w-2xl">
                   <div>
-                    <h3 className="font-bold text-[#101828] text-sm uppercase tracking-wider mb-3">Color Theme</h3>
+                    <h3 className="font-bold text-[#101828] dark:text-white text-sm uppercase tracking-wider mb-3">Color Theme</h3>
                     <div className="grid grid-cols-3 gap-4">
                       {[
-                        { id: 'light', label: 'Light', icon: 'heroicons:sun' },
-                        { id: 'dark', label: 'Dark', icon: 'heroicons:moon' },
-                        { id: 'system', label: 'System', icon: 'heroicons:computer-desktop' },
+                        { id: 'light', label: 'Light', icon: 'heroicons:sun', desc: 'Clean SaaS white surface' },
+                        { id: 'dark', label: 'Dark', icon: 'heroicons:moon', desc: 'Sleek dark workstation' },
+                        { id: 'system', label: 'System', icon: 'heroicons:computer-desktop', desc: 'Auto-sync with OS' },
                       ].map((t) => (
                         <button
                           key={t.id}
+                          type="button"
                           onClick={() => setTheme(t.id)}
                           className={`p-4 rounded-2xl border text-left transition-all ${
                             theme === t.id
-                              ? 'border-brand-orange bg-brand-orange/5 ring-1 ring-brand-orange'
-                              : 'border-[#E4E7EC] hover:bg-gray-50'
+                              ? 'border-brand-orange bg-brand-orange/10 dark:bg-brand-orange/20 ring-2 ring-brand-orange shadow-xs'
+                              : 'border-[#E4E7EC] dark:border-[#2B313C] bg-white dark:bg-[#1E232C] hover:bg-gray-50 dark:hover:bg-[#202631]'
                           }`}
                         >
-                          <Icon icon={t.icon} className={`w-6 h-6 mb-2 ${theme === t.id ? 'text-brand-orange' : 'text-[#667085]'}`} />
-                          <div className="font-bold text-sm text-[#101828]">{t.label}</div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Icon icon={t.icon} className={`w-6 h-6 ${theme === t.id ? 'text-brand-orange' : 'text-[#667085] dark:text-gray-400'}`} />
+                            {theme === t.id && (
+                              <Icon icon="heroicons:check-circle" className="w-5 h-5 text-brand-orange" />
+                            )}
+                          </div>
+                          <div className="font-bold text-sm text-[#101828] dark:text-white">{t.label}</div>
+                          <div className="text-[11px] text-[#667085] dark:text-gray-400 mt-0.5">{t.desc}</div>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-[#E4E7EC]">
-                    <h3 className="font-bold text-[#101828] text-sm uppercase tracking-wider mb-3">Sidebar Preferences</h3>
-                    <div className="flex items-center justify-between p-4 bg-[#F8F9FB] rounded-2xl border border-[#E4E7EC]">
+                  <div className="pt-4 border-t border-[#E4E7EC] dark:border-[#2B313C]">
+                    <h3 className="font-bold text-[#101828] dark:text-white text-sm uppercase tracking-wider mb-3">Sidebar Preferences</h3>
+                    <div className="flex items-center justify-between p-4 bg-[#F8F9FB] dark:bg-[#1E232C] rounded-2xl border border-[#E4E7EC] dark:border-[#2B313C]">
                       <div>
-                        <div className="font-bold text-sm text-[#101828]">Collapsed Sidebar</div>
-                        <div className="text-xs text-[#667085]">Automatically minimize navigation on large displays</div>
+                        <div className="font-bold text-sm text-[#101828] dark:text-white">Collapsed Sidebar</div>
+                        <div className="text-xs text-[#667085] dark:text-gray-400">Automatically minimize navigation on large displays</div>
                       </div>
                       <button
+                        type="button"
                         onClick={toggleSidebar}
-                        className={`w-12 h-6 rounded-full transition-colors relative p-1 ${sidebarCollapsed ? 'bg-brand-orange' : 'bg-gray-300'}`}
+                        className={`w-12 h-6 rounded-full transition-colors relative p-1 ${sidebarCollapsed ? 'bg-brand-orange' : 'bg-gray-300 dark:bg-gray-600'}`}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white transition-transform ${sidebarCollapsed ? 'translate-x-6' : 'translate-x-0'}`} />
                       </button>
@@ -815,21 +823,21 @@ const Settings = ({ userRole = 'sales', onToast }) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
+              className="bg-white dark:bg-[#171A21] border border-[#E4E7EC] dark:border-[#2B313C] rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
             >
               <div className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-[#FEF3F2] text-[#D92D20] flex items-center justify-center mx-auto mb-4 border border-[#FEE4E2]">
+                <div className="w-12 h-12 rounded-full bg-[#FEF3F2] dark:bg-red-950/30 text-[#D92D20] dark:text-red-400 flex items-center justify-center mx-auto mb-4 border border-[#FEE4E2] dark:border-red-900/40">
                   <Icon icon="heroicons:exclamation-triangle" className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-[#101828] mb-2">Discard Unsaved Changes?</h3>
-                <p className="text-sm text-[#667085]">
+                <h3 className="text-lg font-bold text-[#101828] dark:text-white mb-2">Discard Unsaved Changes?</h3>
+                <p className="text-sm text-[#667085] dark:text-gray-300">
                   You have modified settings that haven't been saved. Navigating away will lose these changes.
                 </p>
               </div>
-              <div className="p-4 border-t border-[#E4E7EC] bg-[#F8F9FB] flex gap-3">
+              <div className="p-4 border-t border-[#E4E7EC] dark:border-[#2B313C] bg-[#F8F9FB] dark:bg-[#1E232C] flex gap-3">
                 <button
                   onClick={() => setShowConfirmDiscardModal(false)}
-                  className="flex-1 py-2 bg-white border border-[#E4E7EC] text-[#344054] font-semibold text-sm rounded-xl hover:bg-gray-50"
+                  className="flex-1 py-2 bg-white dark:bg-[#171A21] border border-[#E4E7EC] dark:border-[#2B313C] text-[#344054] dark:text-gray-200 font-semibold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-[#202631]"
                 >
                   Keep Editing
                 </button>

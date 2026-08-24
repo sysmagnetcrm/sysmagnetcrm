@@ -39,23 +39,23 @@ const Toast = ({ toasts = [], remove }) => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.95 }}
             className={`
-              p-3.5 rounded-[10px] shadow-lg bg-white border ${getBorderColor(toast.type)}
+              p-3.5 rounded-[10px] shadow-lg bg-white dark:bg-[#171A21] border ${getBorderColor(toast.type)}
               pointer-events-auto transition-all
             `}
           >
             <div className="flex items-start gap-3">
               <div className="shrink-0 mt-0.5">{getIcon(toast.type)}</div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[#101828] text-xs">
+                <p className="font-semibold text-[#101828] dark:text-white text-xs">
                   {toast.title}
                 </p>
                 {toast.message && (
-                  <p className="text-[11px] text-[#475467] mt-0.5 leading-relaxed">
+                  <p className="text-[11px] text-[#475467] dark:text-gray-300 mt-0.5 leading-relaxed">
                     {toast.message}
                   </p>
                 )}
                 {toast.referenceId && (
-                  <p className="text-[10px] font-mono text-[#667085] mt-1">
+                  <p className="text-[10px] font-mono text-[#667085] dark:text-gray-400 mt-1">
                     Ref: {toast.referenceId}
                   </p>
                 )}

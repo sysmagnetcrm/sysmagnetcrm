@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eron-CRM</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('eron-crm:theme') || localStorage.getItem('eron_theme');
+          var isDark = theme === 'dark' || (!theme || theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="min-h-screen">
     <div id="root"></div>

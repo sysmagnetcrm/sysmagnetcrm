@@ -112,12 +112,12 @@ const Dashboard = ({ onAddClient, onSelectTask, setPanel }) => {
   return (
     <div className="space-y-6 py-1 font-sans">
       {/* 1. Header & Greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-[#E4E7EC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-[#E4E7EC] dark:border-[#2B313C]">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-[#111827] tracking-tight">
+          <h2 className="text-xl md:text-2xl font-bold text-[#111827] dark:text-white tracking-tight">
             {getGreeting()}, {getDisplayName()}
           </h2>
-          <p className="text-xs text-[#667085] mt-0.5">Here's what needs your attention today.</p>
+          <p className="text-xs text-[#667085] dark:text-gray-400 mt-0.5">Here's what needs your attention today.</p>
         </div>
 
         {/* Action CTAs */}
@@ -145,43 +145,43 @@ const Dashboard = ({ onAddClient, onSelectTask, setPanel }) => {
       {/* 2. Compact KPI Cards (1. KPI in Hierarchy) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Revenue */}
-        <div className="saas-card p-4 hover:border-gray-300">
+        <div className="saas-card p-4 hover:border-gray-300 dark:hover:border-gray-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Revenue</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085] dark:text-gray-400">Revenue</span>
             <Icon icon="heroicons:banknotes" className="w-4 h-4 text-[#12B76A]" />
           </div>
-          <div className="text-xl font-bold text-[#111827] mt-1.5">₹{totalRevenue.toLocaleString('en-IN')}</div>
-          <p className="text-[11px] text-[#667085] mt-0.5 truncate">Total payments collected</p>
+          <div className="text-xl font-bold text-[#111827] dark:text-white mt-1.5">₹{totalRevenue.toLocaleString('en-IN')}</div>
+          <p className="text-[11px] text-[#667085] dark:text-gray-400 mt-0.5 truncate">Total payments collected</p>
         </div>
 
         {/* Card 2: Active Clients */}
-        <div className="saas-card p-4 hover:border-gray-300">
+        <div className="saas-card p-4 hover:border-gray-300 dark:hover:border-gray-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Active Clients</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085] dark:text-gray-400">Active Clients</span>
             <Icon icon="heroicons:building-office-2" className="w-4 h-4 text-[#3B82F6]" />
           </div>
-          <div className="text-xl font-bold text-[#111827] mt-1.5">{activeClientsCount}</div>
-          <p className="text-[11px] text-[#667085] mt-0.5 truncate">Active client organizations</p>
+          <div className="text-xl font-bold text-[#111827] dark:text-white mt-1.5">{activeClientsCount}</div>
+          <p className="text-[11px] text-[#667085] dark:text-gray-400 mt-0.5 truncate">Active client organizations</p>
         </div>
 
         {/* Card 3: Active Leads */}
-        <div className="saas-card p-4 hover:border-gray-300">
+        <div className="saas-card p-4 hover:border-gray-300 dark:hover:border-gray-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Active Leads</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085] dark:text-gray-400">Active Leads</span>
             <Icon icon="heroicons:user-group" className="w-4 h-4 text-[#FF8A1F]" />
           </div>
-          <div className="text-xl font-bold text-[#111827] mt-1.5">{activeLeadsCount}</div>
-          <p className="text-[11px] text-[#667085] mt-0.5 truncate">Qualified opportunities</p>
+          <div className="text-xl font-bold text-[#111827] dark:text-white mt-1.5">{activeLeadsCount}</div>
+          <p className="text-[11px] text-[#667085] dark:text-gray-400 mt-0.5 truncate">Qualified opportunities</p>
         </div>
 
         {/* Card 4: Open Tasks */}
-        <div className="saas-card p-4 hover:border-gray-300">
+        <div className="saas-card p-4 hover:border-gray-300 dark:hover:border-gray-600">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085]">Open Tasks</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#667085] dark:text-gray-400">Open Tasks</span>
             <Icon icon="heroicons:clipboard-document-check" className="w-4 h-4 text-[#F79009]" />
           </div>
-          <div className="text-xl font-bold text-[#111827] mt-1.5">{openTasksCount}</div>
-          <p className="text-[11px] text-[#667085] mt-0.5 truncate">Pending team tasks</p>
+          <div className="text-xl font-bold text-[#111827] dark:text-white mt-1.5">{openTasksCount}</div>
+          <p className="text-[11px] text-[#667085] dark:text-gray-400 mt-0.5 truncate">Pending team tasks</p>
         </div>
       </div>
 

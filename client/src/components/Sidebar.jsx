@@ -101,14 +101,14 @@ const Sidebar = ({
 
       {/* Sidebar Container: 240px expanded, 68px collapsed */}
       <aside
-        className={`fixed lg:static top-0 left-0 bottom-0 z-40 bg-white border-r border-[#E4E7EC] flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
+        className={`fixed lg:static top-0 left-0 bottom-0 z-40 bg-white dark:bg-[#14171D] border-r border-[#E4E7EC] dark:border-[#2B313C] flex flex-col transition-all duration-200 ease-in-out shrink-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${
           sidebarCollapsed ? 'lg:w-[68px]' : 'lg:w-[240px]'
         } w-[240px]`}
       >
         {/* Brand Header & Toggle */}
-        <div className={`h-16 px-4 flex items-center border-b border-[#E4E7EC] ${
+        <div className={`h-16 px-4 flex items-center border-b border-[#E4E7EC] dark:border-[#2B313C] ${
           sidebarCollapsed ? 'lg:justify-center justify-between' : 'justify-between'
         }`}>
           {sidebarCollapsed ? (
@@ -137,8 +137,8 @@ const Sidebar = ({
                   E
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-[#111827] text-base leading-tight tracking-tight truncate">Eron-CRM</span>
-                  <span className="text-[10px] text-[#98A2B3] font-medium tracking-wide truncate uppercase">ENTERPRISE SaaS</span>
+                  <span className="font-bold text-[#111827] dark:text-white text-base leading-tight tracking-tight truncate">Eron-CRM</span>
+                  <span className="text-[10px] text-[#98A2B3] dark:text-gray-400 font-medium tracking-wide truncate uppercase">ENTERPRISE SaaS</span>
                 </div>
               </div>
 
@@ -216,13 +216,13 @@ const Sidebar = ({
                               sidebarCollapsed ? 'lg:justify-center justify-start px-2.5' : 'px-3'
                             } py-2 rounded-[8px] text-xs font-medium transition-all ${
                               isActive
-                                ? 'bg-[#FFF4E8] text-[#D96F0B] font-semibold border-l-[3px] border-[#FF8A1F]'
-                                : 'text-[#344054] hover:text-[#111827] hover:bg-[#F9FAFB]'
+                                ? 'bg-[#FFF4E8] dark:bg-brand-orange/15 text-[#D96F0B] dark:text-brand-orange font-semibold border-l-[3px] border-[#FF8A1F]'
+                                : 'text-[#344054] dark:text-gray-300 hover:text-[#111827] dark:hover:text-white hover:bg-[#F9FAFB] dark:hover:bg-[#1E232C]'
                             }`}
                           >
                             <Icon
                               icon={item.icon}
-                              className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#FF8A1F]' : 'text-[#667085] group-hover/item:text-[#111827]'}`}
+                              className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#FF8A1F]' : 'text-[#667085] dark:text-gray-400 group-hover/item:text-[#111827] dark:group-hover/item:text-white'}`}
                             />
                             <span className={`truncate ml-3 ${sidebarCollapsed ? 'lg:hidden' : ''}`}>
                               {item.label}
