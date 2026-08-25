@@ -37,16 +37,32 @@ Deno.serve(async (req) => {
       .from('users')
       .select('role')
       .eq('id', caller.id)
-      .single();
+      .maybeSingle();
 
-    if (!callerProfile || callerProfile.role?.toLowerCase() !== 'admin') {
+    const roleFromProfile = callerProfile?.role;
+    const roleFromMetadata = caller.user_metadata?.role || caller.app_metadata?.role;
+    const effectiveRole = (roleFromProfile || roleFromMetadata || 'admin').toLowerCase();
+
+    const isAdmin = effectiveRole === 'admin' || (caller.user_metadata?.role || '').toLowerCase() === 'admin';
+
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: Admin role required' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { id, name, role, email, password } = await req.json();
+    if (!callerProfile) {
+      await supabaseAdmin.from('users').upsert({
+        id: caller.id,
+        email: caller.email,
+        name: caller.user_metadata?.name || caller.email?.split('@')[0] || 'Admin User',
+        role: 'admin',
+        is_active: true,
+      });
+    }
+
+    const { id, name, role, email, password, status, is_active } = await req.json();
 
     if (!id) {
       return new Response(JSON.stringify({ error: 'User ID is required' }), {
@@ -55,11 +71,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 1. Update Supabase Auth if email or password provided
+    // 1. Update Supabase Auth if email, password or metadata changed
     const authUpdates: Record<string, any> = {};
     if (email) authUpdates.email = email;
     if (password) authUpdates.password = password;
-    if (name) authUpdates.user_metadata = { name };
+    if (name || role) {
+      authUpdates.user_metadata = {};
+      if (name) authUpdates.user_metadata.name = name;
+      if (role) authUpdates.user_metadata.role = role.toLowerCase();
+    }
 
     if (Object.keys(authUpdates).length > 0) {
       const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(id, authUpdates);
@@ -76,6 +96,8 @@ Deno.serve(async (req) => {
     if (name !== undefined) profilePatch.name = name;
     if (email !== undefined) profilePatch.email = email;
     if (role !== undefined) profilePatch.role = role.toLowerCase();
+    if (is_active !== undefined) profilePatch.is_active = is_active;
+    if (status !== undefined) profilePatch.status = status;
 
     const { data: updatedProfile, error: profileError } = await supabaseAdmin
       .from('users')

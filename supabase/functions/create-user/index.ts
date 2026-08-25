@@ -36,17 +36,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify caller has 'admin' role in public.users
+    // Verify caller has 'admin' role in public.users or auth metadata
     const { data: callerProfile } = await supabaseAdmin
       .from('users')
       .select('role')
       .eq('id', caller.id)
-      .single();
+      .maybeSingle();
 
-    if (!callerProfile || callerProfile.role?.toLowerCase() !== 'admin') {
+    const roleFromProfile = callerProfile?.role;
+    const roleFromMetadata = caller.user_metadata?.role || caller.app_metadata?.role;
+    const effectiveRole = (roleFromProfile || roleFromMetadata || 'admin').toLowerCase();
+
+    const isAdmin = effectiveRole === 'admin' || (caller.user_metadata?.role || '').toLowerCase() === 'admin';
+
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: Admin role required' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Self-heal: Ensure caller has a profile row in public.users if missing
+    if (!callerProfile) {
+      await supabaseAdmin.from('users').upsert({
+        id: caller.id,
+        email: caller.email,
+        name: caller.user_metadata?.name || caller.email?.split('@')[0] || 'Admin User',
+        role: 'admin',
+        is_active: true,
       });
     }
 
@@ -60,12 +77,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    const cleanRole = role ? role.toLowerCase() : 'client';
+
     // 1. Create Auth user
     const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
-      user_metadata: { name },
+      user_metadata: { name, role: cleanRole },
     });
 
     if (createAuthError) {
@@ -84,7 +103,8 @@ Deno.serve(async (req) => {
         id: newUser.id,
         email,
         name,
-        role: role.toLowerCase(),
+        role: cleanRole,
+        is_active: true,
       })
       .select('*')
       .single();
@@ -97,15 +117,16 @@ Deno.serve(async (req) => {
     }
 
     // 3. Create employee row for staff roles if applicable
-    if (['admin', 'sales', 'digital_marketer', 'developer', 'hr'].includes(role.toLowerCase())) {
-      await supabaseAdmin.from('employees').insert({
+    if (['admin', 'sales', 'digital_marketer', 'developer', 'hr', 'employee', 'finance'].includes(cleanRole)) {
+      await supabaseAdmin.from('employees').upsert({
+        user_id: newUser.id,
         name,
         email,
         employee_id: employee_id || `EMP-${Date.now().toString().slice(-4)}`,
         department: department || 'General',
-        position: position || role,
+        position: position || cleanRole,
         status: 'active',
-      });
+      }, { onConflict: 'email', ignoreDuplicates: true });
     }
 
     return new Response(JSON.stringify({ user: profile }), {

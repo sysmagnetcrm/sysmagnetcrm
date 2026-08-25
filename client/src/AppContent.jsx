@@ -417,6 +417,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   const handleUpdateUser = async (userId, userData) => {
@@ -431,6 +432,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   const handleDeleteUser = async (userId) => {
@@ -440,6 +442,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   // Render content based on panel

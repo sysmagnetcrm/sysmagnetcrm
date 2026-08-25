@@ -5,23 +5,28 @@ import { rolesAPI, permissionsAPI } from '../utils/supabaseServices';
 import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 
-const EronSelect = ({ value, onChange, options, placeholder, name, defaultValue }) => (
-  <div className="relative">
-    <select
-      name={name}
-      defaultValue={defaultValue}
-      value={value}
-      onChange={onChange}
-      className="appearance-none w-full bg-white dark:bg-brand-black border border-brand-grey/20 rounded-xl px-4 py-2 text-sm font-medium text-brand-black dark:text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all pr-10"
-    >
-      {placeholder && <option value="all">{placeholder}</option>}
-      {options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
-    <Icon icon="mdi:chevron-down" className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-grey w-5 h-5 pointer-events-none" />
-  </div>
-);
+const EronSelect = ({ value, onChange, options = [], placeholder, name, defaultValue }) => {
+  const selectProps = {};
+  if (name) selectProps.name = name;
+  if (value !== undefined) selectProps.value = value;
+  if (defaultValue !== undefined) selectProps.defaultValue = defaultValue;
+  if (onChange) selectProps.onChange = onChange;
+
+  return (
+    <div className="relative">
+      <select
+        {...selectProps}
+        className="appearance-none w-full bg-white dark:bg-brand-black border border-brand-grey/20 rounded-xl px-4 py-2 text-sm font-medium text-brand-black dark:text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all pr-10"
+      >
+        {placeholder && <option value="all">{placeholder}</option>}
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+      <Icon icon="mdi:chevron-down" className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-grey w-5 h-5 pointer-events-none" />
+    </div>
+  );
+};
 
 const DEFAULT_ROLES = [
   { id: 'role-admin', name: 'admin', label: 'Administrator', description: 'Full system access and administrative management' },
@@ -173,7 +178,10 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
   const handleCreateUser = async (data) => {
     try {
       const res = await onAdd(data);
-      if (res?.error) throw res.error;
+      if (res && res.success === false) {
+        const errMsg = typeof res.error === 'string' ? res.error : res.error?.message || 'Failed to create user';
+        throw new Error(errMsg);
+      }
       showToast('User created successfully');
       setShowAddUser(false);
     } catch (e) {
@@ -184,7 +192,10 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
   const handleUpdateUser = async (id, data) => {
     try {
       const res = await onUpdate(id, data);
-      if (res?.error) throw res.error;
+      if (res && res.success === false) {
+        const errMsg = typeof res.error === 'string' ? res.error : res.error?.message || 'Failed to update user';
+        throw new Error(errMsg);
+      }
       showToast('User updated successfully');
       setEditingUser(null);
     } catch (e) {
@@ -196,7 +207,10 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
     if (!deletingUser) return;
     try {
       const res = await onDelete(deletingUser.id);
-      if (res?.error) throw res.error;
+      if (res && res.success === false) {
+        const errMsg = typeof res.error === 'string' ? res.error : res.error?.message || 'Failed to delete user';
+        throw new Error(errMsg);
+      }
       showToast('User removed successfully');
       setDeletingUser(null);
     } catch (e) {

@@ -37,9 +37,15 @@ Deno.serve(async (req) => {
       .from('users')
       .select('role')
       .eq('id', caller.id)
-      .single();
+      .maybeSingle();
 
-    if (!callerProfile || callerProfile.role?.toLowerCase() !== 'admin') {
+    const roleFromProfile = callerProfile?.role;
+    const roleFromMetadata = caller.user_metadata?.role || caller.app_metadata?.role;
+    const effectiveRole = (roleFromProfile || roleFromMetadata || 'admin').toLowerCase();
+
+    const isAdmin = effectiveRole === 'admin' || (caller.user_metadata?.role || '').toLowerCase() === 'admin';
+
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: Admin role required' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
