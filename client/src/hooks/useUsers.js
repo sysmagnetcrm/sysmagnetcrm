@@ -24,10 +24,13 @@ export const useUsers = (filters = {}, enabled = true) => {
   const createUser = async (userData) => {
     try {
       const response = await usersAPI.create(userData);
-      setUsers(prev => [response.data, ...prev]);
-      return { success: true, data: response.data };
+      // Edge function returns { data: { user: {...} } }
+      const newUser = response.data?.user || response.data;
+      if (newUser) setUsers(prev => [newUser, ...prev]);
+      return { success: true, data: newUser };
     } catch (err) {
-      return { success: false, error: err };
+      const msg = err?.appError?.userMessage || err?.message || 'Failed to create user';
+      return { success: false, error: msg };
     }
   };
 
@@ -41,7 +44,8 @@ export const useUsers = (filters = {}, enabled = true) => {
       );
       return { success: true };
     } catch (err) {
-      return { success: false, error: err };
+      const msg = err?.appError?.userMessage || err?.message || 'Failed to update user';
+      return { success: false, error: msg };
     }
   };
 
@@ -51,7 +55,8 @@ export const useUsers = (filters = {}, enabled = true) => {
       setUsers(prev => prev.filter(user => user.id !== id));
       return { success: true };
     } catch (err) {
-      return { success: false, error: err };
+      const msg = err?.appError?.userMessage || err?.message || 'Failed to delete user';
+      return { success: false, error: msg };
     }
   };
 

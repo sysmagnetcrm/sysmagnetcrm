@@ -65,6 +65,46 @@ export const leadsAPI = {
   create: (data) => wrap(supabase.from('leads').insert(data).select().single()),
   update: (id, data) => wrap(supabase.from('leads').update(data).eq('id', id).select().single()),
   delete: (id) => wrap(supabase.from('leads').delete().eq('id', id)),
+
+  // Mark lead as Qualified directly in the DB (admin/digital_marketer only via RLS)
+  qualify: (id) => wrap(
+    supabase.from('leads')
+      .update({ status: 'Qualified', updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+  ),
+
+  // Convert lead to client via Edge Function (handles atomicity + audit log)
+  convert: (leadId, details = {}) => invokeFunction('lead-conversion', {
+    lead_id: leadId,
+    service_type: details.service_type || details.service || null,
+    notes: details.notes || null,
+  }),
+
+  // Bulk import: upsert by email to avoid duplicates
+  import: async (leadsArray) => {
+    const rows = leadsArray.map(l => ({
+      name: l.name,
+      email: l.email || null,
+      phone: l.phone || null,
+      source: l.source || 'Import',
+      status: l.status || 'New',
+      notes: l.notes || null,
+    }));
+    return wrap(
+      supabase.from('leads').upsert(rows, { onConflict: 'email', ignoreDuplicates: true }).select()
+    );
+  },
+
+  // Assign lead to a user (sales agent)
+  assign: (id, userId) => wrap(
+    supabase.from('leads')
+      .update({ assigned_to: userId, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+  ),
 };
 
 // 2. CLIENTS API
@@ -260,6 +300,18 @@ export const staffClientTasksAPI = clientTasksAPI;
 // 13. PRESENCE & PORTAL API
 export const presenceAPI = {
   ping: async () => ({ data: { ok: true } }),
+  heartbeat: async () => {
+    // Lightweight presence update — update last_seen for the current user
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        await supabase.from('users')
+          .update({ last_seen: new Date().toISOString() })
+          .eq('id', user.id);
+      }
+    } catch { /* Ignore heartbeat errors silently */ }
+    return { data: { ok: true } };
+  },
   getOnline: async () => wrap(supabase.from('users').select('id, name, email, role')),
 };
 

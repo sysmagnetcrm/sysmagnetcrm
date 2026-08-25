@@ -13,6 +13,7 @@ Thumbs.db
 
 # Env and secrets
 .env
+.env.supabase
 client/.env*
 server/.env*
 
