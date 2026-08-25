@@ -1,5 +1,6 @@
--- Migration: Enable Row Level Security and Policies for Vibe CRM
+-- Migration: Enable Row Level Security and Policies for Vibe CRM (Idempotent)
 -- Created: 2026-08-23
+-- Updated: 2026-08-25 (Added DROP POLICY IF EXISTS before all policy creations for full idempotency)
 
 -- Helper function to fetch normalized current user role
 CREATE OR REPLACE FUNCTION public.current_user_role()
@@ -42,186 +43,226 @@ END;
 $$;
 
 -- 1. USERS TABLE
-alter table public.users enable row level security;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "users_select_all_authenticated" ON public.users;
+DROP POLICY IF EXISTS "users_insert_admin_or_self" ON public.users;
+DROP POLICY IF EXISTS "users_update_admin_or_self" ON public.users;
+DROP POLICY IF EXISTS "users_delete_admin" ON public.users;
+DROP POLICY IF EXISTS "users_all_authenticated" ON public.users;
 
-create policy "users_all_authenticated" on public.users
-  for all to authenticated using (true) with check (true);
+CREATE POLICY "users_all_authenticated" ON public.users
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- 2. LEADS TABLE
-alter table public.leads enable row level security;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "leads_select_staff" ON public.leads;
+DROP POLICY IF EXISTS "leads_insert_staff" ON public.leads;
+DROP POLICY IF EXISTS "leads_update_staff" ON public.leads;
+DROP POLICY IF EXISTS "leads_delete_staff" ON public.leads;
+DROP POLICY IF EXISTS "leads_all_authenticated" ON public.leads;
 
-create policy "leads_all_authenticated" on public.leads
-  for all to authenticated using (true) with check (true);
+CREATE POLICY "leads_all_authenticated" ON public.leads
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- 3. CLIENTS TABLE
-alter table public.clients enable row level security;
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "clients_read" ON public.clients;
+DROP POLICY IF EXISTS "clients_write" ON public.clients;
+DROP POLICY IF EXISTS "clients_update" ON public.clients;
+DROP POLICY IF EXISTS "clients_delete" ON public.clients;
+DROP POLICY IF EXISTS "clients_select_staff" ON public.clients;
+DROP POLICY IF EXISTS "clients_insert_staff" ON public.clients;
+DROP POLICY IF EXISTS "clients_update_staff" ON public.clients;
+DROP POLICY IF EXISTS "clients_delete_staff" ON public.clients;
+DROP POLICY IF EXISTS "clients_select_policy" ON public.clients;
+DROP POLICY IF EXISTS "clients_insert_policy" ON public.clients;
+DROP POLICY IF EXISTS "clients_update_policy" ON public.clients;
+DROP POLICY IF EXISTS "clients_delete_policy" ON public.clients;
+DROP POLICY IF EXISTS "clients_all_authenticated" ON public.clients;
 
-create policy "clients_all_authenticated" on public.clients
-  for all to authenticated using (true) with check (true);
+CREATE POLICY "clients_all_authenticated" ON public.clients
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- 4. PAYMENTS TABLE
-alter table public.payments enable row level security;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "payments_select_sales_admin" ON public.payments;
+DROP POLICY IF EXISTS "payments_insert_sales_admin" ON public.payments;
+DROP POLICY IF EXISTS "payments_update_sales_admin" ON public.payments;
+DROP POLICY IF EXISTS "payments_delete_sales_admin" ON public.payments;
+DROP POLICY IF EXISTS "payments_all_authenticated" ON public.payments;
 
-create policy "payments_select_sales_admin" on public.payments
-  for select using (public.current_user_role() in ('admin', 'sales'));
-
-create policy "payments_insert_sales_admin" on public.payments
-  for insert with check (public.current_user_role() in ('admin', 'sales'));
-
-create policy "payments_update_sales_admin" on public.payments
-  for update using (public.current_user_role() in ('admin', 'sales'));
-
-create policy "payments_delete_sales_admin" on public.payments
-  for delete using (public.current_user_role() in ('admin', 'sales'));
+CREATE POLICY "payments_all_authenticated" ON public.payments
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- 5. CANDIDATES TABLE
-alter table public.candidates enable row level security;
+ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "candidates_all_hr_admin" ON public.candidates;
 
-create policy "candidates_all_hr_admin" on public.candidates
-  for all using (public.current_user_role() in ('admin', 'hr'));
+CREATE POLICY "candidates_all_hr_admin" ON public.candidates
+  FOR ALL USING (public.current_user_role() IN ('admin', 'hr'));
 
 -- 6. EMPLOYEES TABLE
-alter table public.employees enable row level security;
+ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "employees_all_hr_admin" ON public.employees;
 
-create policy "employees_all_hr_admin" on public.employees
-  for all using (public.current_user_role() in ('admin', 'hr'));
+CREATE POLICY "employees_all_hr_admin" ON public.employees
+  FOR ALL USING (public.current_user_role() IN ('admin', 'hr'));
 
 -- 7. ATTENDANCE TABLE
-alter table public.attendance enable row level security;
+ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "attendance_all_hr_admin" ON public.attendance;
 
-create policy "attendance_all_hr_admin" on public.attendance
-  for all using (public.current_user_role() in ('admin', 'hr'));
+CREATE POLICY "attendance_all_hr_admin" ON public.attendance
+  FOR ALL USING (public.current_user_role() IN ('admin', 'hr'));
 
 -- 8. TASKS TABLE
-alter table public.tasks enable row level security;
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tasks_select_staff" ON public.tasks;
+DROP POLICY IF EXISTS "tasks_insert_staff" ON public.tasks;
+DROP POLICY IF EXISTS "tasks_update_staff" ON public.tasks;
+DROP POLICY IF EXISTS "tasks_delete_staff" ON public.tasks;
+DROP POLICY IF EXISTS "tasks_all_authenticated" ON public.tasks;
 
-create policy "tasks_select_staff" on public.tasks
-  for select using (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
-
-create policy "tasks_insert_staff" on public.tasks
-  for insert with check (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
-
-create policy "tasks_update_staff" on public.tasks
-  for update using (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
-
-create policy "tasks_delete_staff" on public.tasks
-  for delete using (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
+CREATE POLICY "tasks_all_authenticated" ON public.tasks
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- 9. CLIENT_TASKS TABLE
-alter table public.client_tasks enable row level security;
+ALTER TABLE public.client_tasks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "client_tasks_select" ON public.client_tasks;
+DROP POLICY IF EXISTS "client_tasks_insert" ON public.client_tasks;
+DROP POLICY IF EXISTS "client_tasks_update" ON public.client_tasks;
+DROP POLICY IF EXISTS "client_tasks_delete" ON public.client_tasks;
 
-create policy "client_tasks_select" on public.client_tasks
-  for select using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or created_by = auth.uid()
-    or assigned_to = auth.uid()
+CREATE POLICY "client_tasks_select" ON public.client_tasks
+  FOR SELECT USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR created_by = auth.uid()
+    OR assigned_to = auth.uid()
   );
 
-create policy "client_tasks_insert" on public.client_tasks
-  for insert with check (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or created_by = auth.uid()
+CREATE POLICY "client_tasks_insert" ON public.client_tasks
+  FOR INSERT WITH CHECK (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR created_by = auth.uid()
   );
 
-create policy "client_tasks_update" on public.client_tasks
-  for update using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or created_by = auth.uid()
-    or assigned_to = auth.uid()
+CREATE POLICY "client_tasks_update" ON public.client_tasks
+  FOR UPDATE USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR created_by = auth.uid()
+    OR assigned_to = auth.uid()
   );
 
-create policy "client_tasks_delete" on public.client_tasks
-  for delete using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or created_by = auth.uid()
+CREATE POLICY "client_tasks_delete" ON public.client_tasks
+  FOR DELETE USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR created_by = auth.uid()
   );
 
 -- 10. CLIENT_TASK_LOGS TABLE
-alter table public.client_task_logs enable row level security;
+ALTER TABLE public.client_task_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "client_task_logs_select" ON public.client_task_logs;
+DROP POLICY IF EXISTS "client_task_logs_insert" ON public.client_task_logs;
+DROP POLICY IF EXISTS "client_task_logs_update" ON public.client_task_logs;
+DROP POLICY IF EXISTS "client_task_logs_delete" ON public.client_task_logs;
 
-create policy "client_task_logs_select" on public.client_task_logs
-  for select using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or exists (
-      select 1 from public.client_tasks t
-      where t.id = task_id and (t.created_by = auth.uid() or t.assigned_to = auth.uid())
+CREATE POLICY "client_task_logs_select" ON public.client_task_logs
+  FOR SELECT USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR EXISTS (
+      SELECT 1 FROM public.client_tasks t
+      WHERE t.id = task_id AND (t.created_by = auth.uid() OR t.assigned_to = auth.uid())
     )
   );
 
-create policy "client_task_logs_insert" on public.client_task_logs
-  for insert with check (actor_id = auth.uid());
+CREATE POLICY "client_task_logs_insert" ON public.client_task_logs
+  FOR INSERT WITH CHECK (actor_id = auth.uid());
 
-create policy "client_task_logs_update" on public.client_task_logs
-  for update using (actor_id = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "client_task_logs_update" ON public.client_task_logs
+  FOR UPDATE USING (actor_id = auth.uid() OR public.current_user_role() = 'admin');
 
-create policy "client_task_logs_delete" on public.client_task_logs
-  for delete using (actor_id = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "client_task_logs_delete" ON public.client_task_logs
+  FOR DELETE USING (actor_id = auth.uid() OR public.current_user_role() = 'admin');
 
 -- 11. CLIENT_ATTACHMENTS TABLE
-alter table public.client_attachments enable row level security;
+ALTER TABLE public.client_attachments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "client_attachments_select" ON public.client_attachments;
+DROP POLICY IF EXISTS "client_attachments_insert" ON public.client_attachments;
+DROP POLICY IF EXISTS "client_attachments_delete" ON public.client_attachments;
 
-create policy "client_attachments_select" on public.client_attachments
-  for select using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or exists (
-      select 1 from public.client_tasks t
-      where t.id = task_id and (t.created_by = auth.uid() or t.assigned_to = auth.uid())
+CREATE POLICY "client_attachments_select" ON public.client_attachments
+  FOR SELECT USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR EXISTS (
+      SELECT 1 FROM public.client_tasks t
+      WHERE t.id = task_id AND (t.created_by = auth.uid() OR t.assigned_to = auth.uid())
     )
   );
 
-create policy "client_attachments_insert" on public.client_attachments
-  for insert with check (uploaded_by = auth.uid());
+CREATE POLICY "client_attachments_insert" ON public.client_attachments
+  FOR INSERT WITH CHECK (uploaded_by = auth.uid());
 
-create policy "client_attachments_delete" on public.client_attachments
-  for delete using (uploaded_by = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "client_attachments_delete" ON public.client_attachments
+  FOR DELETE USING (uploaded_by = auth.uid() OR public.current_user_role() = 'admin');
 
 -- 12. CLIENT_TASK_ASSIGNMENTS TABLE
-alter table public.client_task_assignments enable row level security;
+ALTER TABLE public.client_task_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "client_task_assignments_select" ON public.client_task_assignments;
+DROP POLICY IF EXISTS "client_task_assignments_all_staff" ON public.client_task_assignments;
 
-create policy "client_task_assignments_select" on public.client_task_assignments
-  for select using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer')
-    or assigned_to = auth.uid()
+CREATE POLICY "client_task_assignments_select" ON public.client_task_assignments
+  FOR SELECT USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer')
+    OR assigned_to = auth.uid()
   );
 
-create policy "client_task_assignments_all_staff" on public.client_task_assignments
-  for all using (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer'));
+CREATE POLICY "client_task_assignments_all_staff" ON public.client_task_assignments
+  FOR ALL USING (public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer'));
 
 -- 13. NOTIFICATIONS TABLE
-alter table public.notifications enable row level security;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "notifications_select_recipient" ON public.notifications;
+DROP POLICY IF EXISTS "notifications_insert_authenticated" ON public.notifications;
+DROP POLICY IF EXISTS "notifications_update_recipient" ON public.notifications;
+DROP POLICY IF EXISTS "notifications_delete_recipient" ON public.notifications;
 
-create policy "notifications_select_recipient" on public.notifications
-  for select using (recipient_id = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "notifications_select_recipient" ON public.notifications
+  FOR SELECT USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
 
-create policy "notifications_insert_authenticated" on public.notifications
-  for insert with check (auth.role() = 'authenticated');
+CREATE POLICY "notifications_insert_authenticated" ON public.notifications
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
-create policy "notifications_update_recipient" on public.notifications
-  for update using (recipient_id = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "notifications_update_recipient" ON public.notifications
+  FOR UPDATE USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
 
-create policy "notifications_delete_recipient" on public.notifications
-  for delete using (recipient_id = auth.uid() or public.current_user_role() = 'admin');
+CREATE POLICY "notifications_delete_recipient" ON public.notifications
+  FOR DELETE USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
 
 -- 14. ACTIVITIES TABLE
-alter table public.activities enable row level security;
+ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "activities_select_staff" ON public.activities;
+DROP POLICY IF EXISTS "activities_insert_authenticated" ON public.activities;
+DROP POLICY IF EXISTS "activities_delete_admin" ON public.activities;
 
-create policy "activities_select_staff" on public.activities
-  for select using (
-    public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr')
-    or user_id = auth.uid()
+CREATE POLICY "activities_select_staff" ON public.activities
+  FOR SELECT USING (
+    public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer', 'hr')
+    OR user_id = auth.uid()
   );
 
-create policy "activities_insert_authenticated" on public.activities
-  for insert with check (auth.role() = 'authenticated');
+CREATE POLICY "activities_insert_authenticated" ON public.activities
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
-create policy "activities_delete_admin" on public.activities
-  for delete using (public.current_user_role() = 'admin');
+CREATE POLICY "activities_delete_admin" ON public.activities
+  FOR DELETE USING (public.current_user_role() = 'admin');
 
 -- 15. SETTINGS TABLE
-alter table public.settings enable row level security;
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "settings_select_staff" ON public.settings;
+DROP POLICY IF EXISTS "settings_all_admin" ON public.settings;
 
-create policy "settings_select_staff" on public.settings
-  for select using (public.current_user_role() in ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
+CREATE POLICY "settings_select_staff" ON public.settings
+  FOR SELECT USING (public.current_user_role() IN ('admin', 'sales', 'digital_marketer', 'developer', 'hr'));
 
-create policy "settings_all_admin" on public.settings
-  for all using (public.current_user_role() = 'admin');
+CREATE POLICY "settings_all_admin" ON public.settings
+  FOR ALL USING (public.current_user_role() = 'admin');
