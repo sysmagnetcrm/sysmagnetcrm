@@ -195,12 +195,18 @@ const Leads = ({
     e.preventDefault();
     setSubmitting(true);
     try {
+      let result;
       if (editingLead) {
-        await onUpdateLead(editingLead.id, formData);
+        result = await onUpdateLead(editingLead.id, formData);
       } else {
-        await onCreateLead(formData);
+        result = await onCreateLead(formData);
       }
-      setShowAddDrawer(false);
+      if (result && result.success === false) {
+        console.error('Lead save error:', result.error);
+        // Don't close — let AppContent toast handle the error display
+      } else {
+        setShowAddDrawer(false);
+      }
     } catch (err) {
       console.error('Lead save error:', err);
     } finally {

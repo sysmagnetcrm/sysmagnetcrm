@@ -56,15 +56,8 @@ export const useLeads = (filters = {}, enabled = true) => {
       setLeads(prev => [response.data, ...prev]);
       return { success: true, data: response.data };
     } catch (err) {
-      // Fallback: add locally
-      const newLead = {
-        id: Date.now(),
-        ...leadData,
-        status: 'New',
-        created_at: new Date().toISOString(),
-      };
-      setLeads(prev => [newLead, ...prev]);
-      return { success: true, data: newLead };
+      console.error('Error creating lead:', err);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to create lead' };
     }
   };
 
@@ -97,11 +90,7 @@ export const useLeads = (filters = {}, enabled = true) => {
       return { success: true };
     } catch (err) {
       console.error('Error updating lead:', err);
-      // Fallback local update
-      setLeads(prev =>
-        prev.map(lead => (lead.id === id ? { ...lead, ...leadData, updated_at: new Date().toISOString() } : lead))
-      );
-      return { success: true };
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to update lead' };
     }
   };
 

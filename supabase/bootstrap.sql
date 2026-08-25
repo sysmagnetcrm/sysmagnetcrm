@@ -36,6 +36,7 @@ CREATE TABLE public.users (
   phone       text,
   avatar_url  text,
   is_active   boolean DEFAULT true,
+  last_seen   timestamptz,
   created_at  timestamptz DEFAULT now(),
   updated_at  timestamptz DEFAULT now()
 );
@@ -88,11 +89,14 @@ CREATE TABLE public.leads (
   name                text NOT NULL,
   email               text,
   phone               text,
-  company             text,
+  contact             text,          -- Contact person name
+  company             text,          -- Company / organization
   status              text DEFAULT 'New',
   priority            text DEFAULT 'Warm',
   source              text,
-  service_type        text,
+  service             text,          -- Interested service (UI alias)
+  service_type        text,          -- Canonical service type (edge function)
+  value               numeric,       -- Estimated deal value
   notes               text,
   assigned_to         uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   converted_at        timestamptz,
