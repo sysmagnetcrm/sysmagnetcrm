@@ -239,6 +239,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   const handleAddCandidate = async (candidateData) => {
@@ -329,6 +330,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   const handleDeleteClient = async (clientId) => {
@@ -338,6 +340,7 @@ function AppContent() {
     } else {
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
+    return result;
   };
 
   const handleCreateTaskFromClient = (client) => {

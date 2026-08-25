@@ -151,7 +151,11 @@ const Clients = ({
     setSubmitting(true);
     try {
       if (onCreateClient) {
-        await onCreateClient(formData);
+        const res = await onCreateClient(formData);
+        if (res && res.success === false) {
+          console.error('Client creation failed:', res.error);
+          return;
+        }
       }
       setShowAddDrawer(false);
       setFormData({

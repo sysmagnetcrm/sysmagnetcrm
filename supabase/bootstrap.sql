@@ -65,6 +65,8 @@ CREATE TABLE public.clients (
   phone         text,
   contact       text,
   status        text DEFAULT 'Active',
+  source        text,
+  service       text,
   service_type  text,
   total_amount  numeric DEFAULT 0 CHECK (total_amount >= 0),
   paid_amount   numeric DEFAULT 0 CHECK (paid_amount >= 0),
