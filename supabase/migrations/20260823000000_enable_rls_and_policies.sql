@@ -275,18 +275,21 @@ DO $$ BEGIN
     DROP POLICY IF EXISTS "notifications_insert_authenticated" ON public.notifications;
     DROP POLICY IF EXISTS "notifications_update_recipient" ON public.notifications;
     DROP POLICY IF EXISTS "notifications_delete_recipient" ON public.notifications;
+    DROP POLICY IF EXISTS "notifications_read" ON public.notifications;
+    DROP POLICY IF EXISTS "notifications_insert" ON public.notifications;
+    DROP POLICY IF EXISTS "notifications_update" ON public.notifications;
 
     CREATE POLICY "notifications_select_recipient" ON public.notifications
-      FOR SELECT USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
+      FOR SELECT USING (user_id = auth.uid() OR public.current_user_role() = 'admin');
 
     CREATE POLICY "notifications_insert_authenticated" ON public.notifications
       FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
     CREATE POLICY "notifications_update_recipient" ON public.notifications
-      FOR UPDATE USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
+      FOR UPDATE USING (user_id = auth.uid() OR public.current_user_role() = 'admin');
 
     CREATE POLICY "notifications_delete_recipient" ON public.notifications
-      FOR DELETE USING (recipient_id = auth.uid() OR public.current_user_role() = 'admin');
+      FOR DELETE USING (user_id = auth.uid() OR public.current_user_role() = 'admin');
   END IF;
 END $$;
 
