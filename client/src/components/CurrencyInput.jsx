@@ -1,4 +1,5 @@
 import React from 'react';
+import EronInput from './EronInput';
 
 const CurrencyInput = ({
   label,
@@ -7,9 +8,9 @@ const CurrencyInput = ({
   placeholder = '50,000',
   disabled = false,
   required = false,
+  error,
   className = '',
 }) => {
-  // Format numeric value for display (e.g., 50000 -> 50,000)
   const formatDisplay = (val) => {
     if (val === undefined || val === null || val === '') return '';
     const num = Number(val);
@@ -18,30 +19,23 @@ const CurrencyInput = ({
   };
 
   const handleInputChange = (e) => {
-    const rawVal = e.target.value.replace(/[^0-9.]/g, ''); // Extract digits and decimal only
+    const rawVal = e.target.value.replace(/[^0-9.]/g, '');
     onChange(rawVal);
   };
 
   return (
-    <div className={`w-full ${className}`}>
-      {label && (
-        <label className="saas-label">
-          {label} {required && <span className="text-[#F04438]">*</span>}
-        </label>
-      )}
-      <div className="relative w-full">
-        <span className="currency-prefix">₹</span>
-        <input
-          type="text"
-          disabled={disabled}
-          required={required}
-          value={formatDisplay(value)}
-          onChange={handleInputChange}
-          placeholder={placeholder}
-          className="saas-input saas-input-icon font-medium h-[42px]"
-        />
-      </div>
-    </div>
+    <EronInput
+      label={label}
+      prefix="₹"
+      type="text"
+      disabled={disabled}
+      required={required}
+      value={formatDisplay(value)}
+      onChange={handleInputChange}
+      placeholder={placeholder}
+      error={error}
+      className={className}
+    />
   );
 };
 
