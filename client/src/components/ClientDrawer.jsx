@@ -7,10 +7,11 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: client?.name || '',
-    contact: client?.contact_person || client?.contact || '',
+    contact: client?.contact || '',
     phone: client?.phone || '',
     email: client?.email || '',
     status: client?.status || 'Active',
+    source: client?.source || 'Manual',
     serviceType: client?.service_type || client?.serviceType || client?.service || '',
     notes: client?.notes || ''
   });
@@ -18,13 +19,14 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
   const serviceOptions = ['Web Development', 'Production', 'Marketing', 'App Development', 'Cybersecurity', 'Other'];
 
   const handleSave = async () => {
-    // Only send columns that actually exist in public.clients table
+    // Only send columns that exist in live public.clients: contact (not contact_person!)
     const payload = {
       name: formData.name,
-      contact_person: formData.contact || null,
+      contact: formData.contact || null,
       phone: formData.phone || null,
       email: formData.email || null,
       status: formData.status || 'Active',
+      source: formData.source || 'Manual',
       service_type: formData.serviceType || null,
       notes: formData.notes || null,
     };

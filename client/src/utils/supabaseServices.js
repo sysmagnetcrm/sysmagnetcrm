@@ -124,8 +124,8 @@ export const clientsAPI = {
     if (params.search) {
       const cleanTerm = sanitizeSearchTerm(params.search);
       if (cleanTerm) {
-        // Only search columns that exist in the clients table
-        query = query.or(`name.ilike.%${cleanTerm}%,email.ilike.%${cleanTerm}%,contact_person.ilike.%${cleanTerm}%`);
+        // Only search columns that exist in live public.clients table (contact, not contact_person!)
+        query = query.or(`name.ilike.%${cleanTerm}%,email.ilike.%${cleanTerm}%,contact.ilike.%${cleanTerm}%`);
       }
     }
     if (params.status && params.status !== 'All') {

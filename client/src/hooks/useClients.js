@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { clientsAPI } from '../utils/supabaseServices';
 
+/**
+ * Live Supabase `public.clients` columns (verified 2026-09-22):
+ *   id, name, email, phone, contact, status, service_type, service,
+ *   total_amount, paid_amount, notes, user_id, source, created_at, updated_at
+ *
+ * NOTE: The column is `contact` (NOT contact_person). `source` and `service` also exist.
+ */
 export const useClients = (filters = {}, enabled = true) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,13 +17,12 @@ export const useClients = (filters = {}, enabled = true) => {
     try {
       setLoading(true);
       setError(null);
-
       const response = await clientsAPI.getAll(filters);
       const rawList = response.data || [];
+      // Normalize so UI always has both `contact` and `service_type`
       const normalized = rawList.map(c => ({
         ...c,
-        contact: c.contact_person || c.contact || '',
-        contact_person: c.contact_person || c.contact || '',
+        contact: c.contact || '',
         service_type: c.service_type || c.service || '',
       }));
       setClients(normalized);
@@ -42,22 +48,25 @@ export const useClients = (filters = {}, enabled = true) => {
 
   const createClient = async (clientData) => {
     try {
-      // Standardize field names for database compatibility (table schema uses contact_person & service_type)
+      // Only send columns that exist in the live `public.clients` table
       const payload = {
         name: clientData.name,
-        contact_person: clientData.contact || clientData.contact_person || null,
+        contact: clientData.contact || clientData.contact_person || null,
         phone: clientData.phone || null,
         email: clientData.email || null,
         status: clientData.status || 'Active',
         service_type: clientData.service_type || clientData.serviceType || clientData.service || null,
         notes: clientData.notes || null,
+        source: clientData.source || 'Manual',
       };
+
+      console.log('[createClient] Sending payload:', payload);
+
       const response = await clientsAPI.create(payload);
       const created = {
         ...(response.data || payload),
         id: response.data?.id || `client-${Date.now()}`,
-        contact: response.data?.contact_person || payload.contact_person || '',
-        contact_person: response.data?.contact_person || payload.contact_person || '',
+        contact: response.data?.contact || payload.contact || '',
         service_type: response.data?.service_type || payload.service_type || '',
         created_at: response.data?.created_at || new Date().toISOString(),
       };
@@ -73,19 +82,18 @@ export const useClients = (filters = {}, enabled = true) => {
     try {
       const payload = {};
       if (clientData.name !== undefined) payload.name = clientData.name;
+      // Use `contact` (actual DB column, not contact_person)
       if (clientData.contact !== undefined || clientData.contact_person !== undefined) {
-        payload.contact_person = clientData.contact || clientData.contact_person;
+        payload.contact = clientData.contact || clientData.contact_person;
       }
       if (clientData.phone !== undefined) payload.phone = clientData.phone;
       if (clientData.email !== undefined) payload.email = clientData.email;
       if (clientData.status !== undefined) payload.status = clientData.status;
       if (clientData.notes !== undefined) payload.notes = clientData.notes;
+      if (clientData.source !== undefined) payload.source = clientData.source;
 
-      const serviceVal = clientData.service_type || clientData.serviceType || clientData.service;
-      if (serviceVal !== undefined) {
-        payload.service_type = serviceVal;
-      }
-      // Note: 'source' column does not exist in public.clients — omit it
+      const serviceVal = clientData.service_type ?? clientData.serviceType ?? clientData.service;
+      if (serviceVal !== undefined) payload.service_type = serviceVal;
 
       await clientsAPI.update(id, payload);
       setClients(prev =>
@@ -93,7 +101,6 @@ export const useClients = (filters = {}, enabled = true) => {
           client.id === id ? {
             ...client,
             ...payload,
-            contact: payload.contact_person !== undefined ? payload.contact_person : client.contact,
             updated_at: new Date().toISOString(),
           } : client
         )
