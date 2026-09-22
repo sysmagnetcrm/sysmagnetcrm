@@ -85,7 +85,7 @@ export const useClients = (filters = {}, enabled = true) => {
       if (serviceVal !== undefined) {
         payload.service_type = serviceVal;
       }
-      if (clientData.source !== undefined) payload.source = clientData.source;
+      // Note: 'source' column does not exist in public.clients — omit it
 
       await clientsAPI.update(id, payload);
       setClients(prev =>

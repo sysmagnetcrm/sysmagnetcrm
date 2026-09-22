@@ -7,21 +7,26 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: client?.name || '',
-    contact: client?.contact || '',
+    contact: client?.contact_person || client?.contact || '',
     phone: client?.phone || '',
     email: client?.email || '',
-    status: client?.status || 'New',
-    source: client?.source || 'Manual',
-    serviceType: client?.serviceType || client?.service || '',
+    status: client?.status || 'Active',
+    serviceType: client?.service_type || client?.serviceType || client?.service || '',
     notes: client?.notes || ''
   });
   const [customService, setCustomService] = useState('');
   const serviceOptions = ['Web Development', 'Production', 'Marketing', 'App Development', 'Cybersecurity', 'Other'];
 
   const handleSave = async () => {
+    // Only send columns that actually exist in public.clients table
     const payload = {
-      ...formData,
-      service_type: formData.serviceType || formData.service || '',
+      name: formData.name,
+      contact_person: formData.contact || null,
+      phone: formData.phone || null,
+      email: formData.email || null,
+      status: formData.status || 'Active',
+      service_type: formData.serviceType || null,
+      notes: formData.notes || null,
     };
     if (onUpdate) {
       const res = await onUpdate(client.id, payload);

@@ -7,14 +7,24 @@ const wrap = async (promise, context = {}) => {
   try {
     const { data, error } = await promise;
     if (error) {
+      // Log raw Supabase error for debugging
+      console.error('[Supabase RAW Error]', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        context,
+      });
       const normalized = normalizeError(error, context);
       const errObj = new Error(normalized.userMessage);
       errObj.appError = normalized;
+      errObj.rawSupabaseError = error;
       throw errObj;
     }
     return { data };
   } catch (e) {
     if (e.appError) throw e;
+    console.error('[Supabase Unexpected Error]', e?.message, context);
     const normalized = normalizeError(e, context);
     const errObj = new Error(normalized.userMessage);
     errObj.appError = normalized;
@@ -114,7 +124,8 @@ export const clientsAPI = {
     if (params.search) {
       const cleanTerm = sanitizeSearchTerm(params.search);
       if (cleanTerm) {
-        query = query.or(`name.ilike.%${cleanTerm}%,email.ilike.%${cleanTerm}%,contact.ilike.%${cleanTerm}%`);
+        // Only search columns that exist in the clients table
+        query = query.or(`name.ilike.%${cleanTerm}%,email.ilike.%${cleanTerm}%,contact_person.ilike.%${cleanTerm}%`);
       }
     }
     if (params.status && params.status !== 'All') {
