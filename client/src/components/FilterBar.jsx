@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 
 const FilterBar = ({
   searchQuery = '',
@@ -49,10 +49,10 @@ const FilterBar = ({
           />
         </div>
 
-        {/* Inline EronSelect Primary Filters & Advanced Filters Trigger */}
+        {/* Inline SysSelect Primary Filters & Advanced Filters Trigger */}
         <div className="flex items-center gap-2 flex-wrap relative" ref={popoverRef}>
           {primaryFilters.map((f) => (
-            <EronSelect
+            <SysSelect
               key={f.key}
               value={activeFilters[f.key] || 'all'}
               onChange={(val) => onFilterChange && onFilterChange(f.key, val)}
@@ -104,7 +104,7 @@ const FilterBar = ({
               {advancedFilters.map((f) => (
                 <div key={f.key} className="space-y-1">
                   {f.type === 'select' ? (
-                    <EronSelect
+                    <SysSelect
                       label={f.label}
                       value={activeFilters[f.key] || 'all'}
                       onChange={(val) => onFilterChange && onFilterChange(f.key, val)}

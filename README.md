@@ -1,6 +1,6 @@
-# Eron-CRM
+# Sysmagnet-CRM
 
-Eron-CRM is a modern, low-cost, production-ready Customer Relationship Management (CRM) application built with React + Vite and powered exclusively by Supabase backend infrastructure.
+Sysmagnet-CRM is a modern, low-cost, production-ready Customer Relationship Management (CRM) application built with React + Vite and powered exclusively by Supabase backend infrastructure.
 
 ---
 
@@ -52,8 +52,8 @@ VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-org/eron-crm.git
-   cd eron-crm/client
+   git clone https://github.com/your-org/sysmagnet-crm.git
+   cd sysmagnet-crm/client
    ```
 
 2. **Install dependencies**:
@@ -79,7 +79,7 @@ VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
 
 Migrations are stored in `supabase/migrations/`:
 - `20260823000000_enable_rls_and_policies.sql` — Initial table RLS policies.
-- `20260823000001_eron_crm_master_schema.sql` — Eron-CRM master PostgreSQL schema with full RBAC, UUID primary keys, and tenant isolation policies.
+- `20260823000001_eron_crm_master_schema.sql` — Sysmagnet-CRM master PostgreSQL schema with full RBAC, UUID primary keys, and tenant isolation policies.
 
 To apply migrations using the Supabase CLI:
 ```bash

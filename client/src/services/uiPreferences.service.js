@@ -1,6 +1,6 @@
 import { supabase } from '../utils/supabaseClient';
 
-const LOCAL_STORAGE_PREFIX = 'eron-crm-ui-preferences:';
+const LOCAL_STORAGE_PREFIX = 'sysmagnet-crm-ui-preferences:';
 
 // Default preferences state
 export const DEFAULT_PREFERENCES = {

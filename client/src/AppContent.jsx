@@ -36,6 +36,7 @@ import Leaderboard from './components/Leaderboard';
 import ClientPortal from './components/ClientPortal';
 import PortalManager from './components/PortalManager';
 import AdminClientTasks from './components/AdminClientTasks';
+import AdminClientLogs from './components/AdminClientLogs';
 import StaffWorkboard from './components/StaffWorkboard';
 import ModuleErrorBoundary from './components/ModuleErrorBoundary';
 import OfflineBanner from './components/OfflineBanner';
@@ -398,16 +399,16 @@ function AppContent() {
   };
 
   const handleConvertLeadToClient = async (leadId, details) => {
-    debugLog('info', `Converting lead ${leadId} to client`, details);
+    console.log('[Sysmagnet-CRM] Converting lead', leadId, 'to client', details);
     const result = await convertToClient(leadId, details);
     if (result.success) {
-      debugLog('success', `Lead ${leadId} converted successfully`);
+      console.log('[Sysmagnet-CRM] Lead', leadId, 'converted successfully');
       addToast({ title: 'Lead Converted', message: 'Lead qualified and linked to client', type: 'success' });
       // Refresh clients list to show the newly converted client
-      debugLog('info', 'Refreshing clients list...');
+      console.log('[Sysmagnet-CRM] Refreshing clients list...');
       refetchClients();
     } else {
-      debugLog('error', `Failed to convert lead ${leadId}`, result.error);
+      console.error('[Sysmagnet-CRM] Failed to convert lead', leadId, result.error);
       addToast({ title: 'Error', message: result.error, type: 'error' });
     }
   };
@@ -579,6 +580,7 @@ function AppContent() {
           />
         );
       case 'hr':
+      case 'employees':
         return <HRManagement />;
       case 'attendance':
         return <Attendance />;
@@ -604,9 +606,9 @@ function AppContent() {
       <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-[12px] bg-[#FF8A1F] text-white font-bold text-lg flex items-center justify-center animate-pulse shadow-subtle">
-            E
+            S
           </div>
-          <p className="text-xs font-semibold text-gray-500">Loading Eron-CRM...</p>
+          <p className="text-xs font-semibold text-gray-500">Loading Sysmagnet-CRM...</p>
         </div>
       </div>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import EronInput from './EronInput';
+import SysInput from './SysInput';
 
 const CurrencyInput = ({
   label,
@@ -24,7 +24,7 @@ const CurrencyInput = ({
   };
 
   return (
-    <EronInput
+    <SysInput
       label={label}
       prefix="₹"
       type="text"

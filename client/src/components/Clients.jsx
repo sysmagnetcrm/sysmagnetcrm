@@ -4,7 +4,7 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import ConfirmDialog from './ConfirmDialog';
@@ -368,7 +368,7 @@ const Clients = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <EronSelect
+            <SysSelect
               label="Account Status"
               value={formData.status}
               onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
@@ -380,7 +380,7 @@ const Clients = ({
               ]}
             />
 
-            <EronSelect
+            <SysSelect
               label="Service Type"
               value={formData.service_type}
               onChange={(val) => setFormData(prev => ({ ...prev, service_type: val }))}

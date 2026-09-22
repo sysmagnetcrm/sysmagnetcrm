@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 
 const ClientDrawer = ({ client, onClose, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -100,7 +100,7 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
             <div className="flex items-center justify-between p-4 rounded-2xl bg-brand-grey/5 border border-brand-grey/10">
               <span className="text-sm font-medium text-brand-grey">Current Status</span>
               {isEditing ? (
-                <EronSelect
+                <SysSelect
                   value={formData.status}
                   onChange={(val) => setFormData({ ...formData, status: val })}
                   width="w-[160px]"
@@ -153,7 +153,7 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
                   <div>
                     <label className="block text-xs font-medium text-brand-grey mb-1.5 ml-1">Source</label>
                     {isEditing ? (
-                      <EronSelect
+                      <SysSelect
                         value={formData.source}
                         onChange={(val) => setFormData({ ...formData, source: val })}
                         options={['Manual', 'Website', 'Referral', 'Social Media', 'Cold Call'].map(s => ({ value: s, label: s }))}
@@ -216,7 +216,7 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
               <div>
                 <label className="block text-xs font-medium text-brand-grey mb-1.5 ml-1">Service Interest</label>
                 {isEditing ? (
-                  <EronSelect
+                  <SysSelect
                     value={serviceOptions.includes(formData.serviceType) ? formData.serviceType : 'Other'}
                     onChange={(val) => {
                       if (val !== 'Other') setFormData({ ...formData, serviceType: val });

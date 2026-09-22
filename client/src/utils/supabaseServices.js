@@ -316,7 +316,11 @@ export const presenceAPI = {
 };
 
 export const portalAPI = {
-  getProfile: () => wrap(supabase.from('users').select('*').single()),
+  getProfile: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error('Not authenticated');
+    return wrap(supabase.from('users').select('*').eq('id', user.id).single());
+  },
 };
 
 // 14. PAYROLL STUB (UI display fallback per Phase 3 item 5)
@@ -358,8 +362,22 @@ export const permissionsAPI = {
 };
 
 export const meAPI = {
-  getProfile: () => wrap(supabase.from('users').select('*').single()),
-  updateProfile: async (data) => wrap(supabase.from('users').update(data).single()),
+  getProfile: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error('Not authenticated');
+    return wrap(supabase.from('users').select('*').eq('id', user.id).single());
+  },
+  updateProfile: async (data) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error('Not authenticated');
+    return wrap(supabase.from('users').update(data).eq('id', user.id).select().single());
+  },
+  // Alias so both meAPI.update() and meAPI.updateProfile() work
+  update: async (data) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) throw new Error('Not authenticated');
+    return wrap(supabase.from('users').update(data).eq('id', user.id).select().single());
+  },
 };
 
 export const ticketsAPI = {

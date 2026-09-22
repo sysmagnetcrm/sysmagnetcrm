@@ -1,5 +1,5 @@
 -- ============================================================
--- Eron-CRM Bootstrap SQL — CLEAN INSTALL
+-- Sysmagnet-CRM Bootstrap SQL — CLEAN INSTALL
 -- Paste into: https://supabase.com/dashboard/project/phmwijxrqrzykfcaljwm/sql/new
 -- Safe to run multiple times (drops and recreates everything).
 -- ============================================================

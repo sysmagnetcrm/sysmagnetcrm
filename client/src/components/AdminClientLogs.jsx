@@ -12,12 +12,12 @@ const AdminClientLogs = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const resp = await adminClientTasksAPI.logs(limit);
-      let rows = resp.data || [];
-      if (role !== 'all') rows = rows.filter(r => (r.actor_role || '').toLowerCase() === role);
+      const resp = await adminClientTasksAPI.getAll();
+      let rows = (resp.data || []).slice(0, limit);
+      if (role !== 'all') rows = rows.filter(r => (r.actor_role || r.role || '').toLowerCase() === role);
       if (q) {
         const term = q.toLowerCase();
-        rows = rows.filter(r => (r.message || '').toLowerCase().includes(term) || (r.title || '').toLowerCase().includes(term));
+        rows = rows.filter(r => (r.message || r.description || '').toLowerCase().includes(term) || (r.title || '').toLowerCase().includes(term));
       }
       setLogs(rows);
     } catch (e) {

@@ -5,7 +5,7 @@ import { rolesAPI, permissionsAPI } from '../utils/supabaseServices';
 import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 
-const EronSelect = ({ value, onChange, options = [], placeholder, name, defaultValue }) => {
+const SysSelect = ({ value, onChange, options = [], placeholder, name, defaultValue }) => {
   const selectProps = {};
   if (name) selectProps.name = name;
   if (value !== undefined) selectProps.value = value;
@@ -331,7 +331,7 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
           </div>
           <div className="flex gap-3 w-full md:w-auto">
             <div className="w-full md:w-40">
-              <EronSelect
+              <SysSelect
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
                 placeholder="All Roles"
@@ -339,7 +339,7 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
               />
             </div>
             <div className="w-full md:w-40">
-              <EronSelect
+              <SysSelect
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 placeholder="All Statuses"
@@ -484,7 +484,7 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
                   </div>
                   <div>
                     <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">Role *</label>
-                    <EronSelect name="role" options={roleOptions} />
+                    <SysSelect name="role" options={roleOptions} />
                   </div>
                 </div>
                 <div className="p-6 border-t border-[#E4E7EC] dark:border-[#2B313C] bg-[#F8F9FB] dark:bg-[#1E232C] flex justify-end gap-3">
@@ -545,11 +545,11 @@ const UserManagement = ({ users: rawUsers = [], onAdd, onUpdate, onDelete }) => 
                   </div>
                   <div>
                     <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">Role</label>
-                    <EronSelect name="role" defaultValue={editingUser.role} options={roleOptions} />
+                    <SysSelect name="role" defaultValue={editingUser.role} options={roleOptions} />
                   </div>
                   <div>
                     <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">Status</label>
-                    <EronSelect name="status" defaultValue={editingUser.is_active !== false && (editingUser.status || '').toLowerCase() !== 'inactive' ? 'active' : 'inactive'} options={[
+                    <SysSelect name="status" defaultValue={editingUser.is_active !== false && (editingUser.status || '').toLowerCase() !== 'inactive' ? 'active' : 'inactive'} options={[
                       { value: 'active', label: 'Active' },
                       { value: 'inactive', label: 'Inactive' }
                     ]} />

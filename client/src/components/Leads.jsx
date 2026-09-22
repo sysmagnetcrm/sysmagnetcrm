@@ -4,7 +4,7 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 import CurrencyInput from './CurrencyInput';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
@@ -276,7 +276,7 @@ const Leads = ({
         />
       </div>
 
-      {/* Single Cohesive Filter Toolbar using EronSelect */}
+      {/* Single Cohesive Filter Toolbar using SysSelect */}
       <FilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -371,7 +371,7 @@ const Leads = ({
         )}
       </div>
 
-      {/* Add / Edit Lead Form Drawer using EronSelect & CurrencyInput */}
+      {/* Add / Edit Lead Form Drawer using SysSelect & CurrencyInput */}
       <FormDrawer
         isOpen={showAddDrawer}
         onClose={() => setShowAddDrawer(false)}
@@ -448,7 +448,7 @@ const Leads = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <EronSelect
+            <SysSelect
               label="Initial Status"
               value={formData.status}
               onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
@@ -460,7 +460,7 @@ const Leads = ({
               ]}
             />
 
-            <EronSelect
+            <SysSelect
               label="Lead Source"
               value={formData.source}
               onChange={(val) => setFormData(prev => ({ ...prev, source: val }))}
@@ -474,7 +474,7 @@ const Leads = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <EronSelect
+            <SysSelect
               label="Interested Service"
               value={formData.service}
               onChange={(val) => setFormData(prev => ({ ...prev, service: val }))}

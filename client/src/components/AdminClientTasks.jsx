@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useClientTasks } from '../hooks/useClientTasks';
 import { usersAPI } from '../utils/supabaseServices';
 import { Icon } from '@iconify/react';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 import CurrencyInput from './CurrencyInput';
 
 const staffRoles = ['developer', 'digital_marketer', 'hr', 'sales', 'finance', 'support'];
@@ -442,7 +442,7 @@ const AdminClientTasks = ({ users: usersProp = [], clients: clientsProp = [], on
               />
             </div>
 
-            <EronSelect
+            <SysSelect
               value={statusFilter}
               onChange={(val) => setStatusFilter(val)}
               options={STATUS_OPTIONS}
@@ -608,7 +608,7 @@ const AdminClientTasks = ({ users: usersProp = [], clients: clientsProp = [], on
 
                 <div>
                   <label className="saas-label">Client</label>
-                  <EronSelect
+                  <SysSelect
                     value={newProject.client_id}
                     onChange={(val) => setNewProject({ ...newProject, client_id: val })}
                     options={[
@@ -641,7 +641,7 @@ const AdminClientTasks = ({ users: usersProp = [], clients: clientsProp = [], on
 
                 <div>
                   <label className="saas-label">Priority</label>
-                  <EronSelect
+                  <SysSelect
                     value={newProject.priority}
                     onChange={(val) => setNewProject({ ...newProject, priority: val })}
                     options={[

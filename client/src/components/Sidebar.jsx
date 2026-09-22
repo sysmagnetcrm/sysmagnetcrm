@@ -69,6 +69,7 @@ const Sidebar = ({
       key: 'analytics',
       items: [
         { id: 'reports', label: 'Reports', icon: 'heroicons:chart-bar', roles: ['admin', 'sales', 'finance'] },
+        { id: 'leaderboard', label: 'Leaderboard', icon: 'heroicons:trophy', roles: ['admin', 'sales'] },
       ]
     },
     {
@@ -115,7 +116,7 @@ const Sidebar = ({
             /* Collapsed Header */
             <div className="hidden lg:flex flex-col items-center gap-1.5 py-1">
               <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base">
-                E
+                S
               </div>
               <button
                 onClick={() => setSidebarCollapsed(false)}
@@ -134,10 +135,10 @@ const Sidebar = ({
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-[8px] bg-[#FF8A1F] flex items-center justify-center text-white font-bold text-base shrink-0">
-                  E
+                  S
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-[#111827] dark:text-white text-base leading-tight tracking-tight truncate">Eron-CRM</span>
+                  <span className="font-bold text-[#111827] dark:text-white text-base leading-tight tracking-tight truncate">Sysmagnet-CRM</span>
                   <span className="text-[10px] text-[#98A2B3] dark:text-gray-400 font-medium tracking-wide truncate uppercase">ENTERPRISE SaaS</span>
                 </div>
               </div>

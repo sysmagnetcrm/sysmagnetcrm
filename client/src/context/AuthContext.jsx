@@ -150,9 +150,9 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setSession(null);
       try {
-        const themeVal = localStorage.getItem('eron-crm:theme') || localStorage.getItem('eron_theme');
-        localStorage.removeItem('eron_user');
-        localStorage.removeItem('eron_profile_extras');
+        const themeVal = localStorage.getItem('sysmagnet-crm:theme') || localStorage.getItem('sysmagnet_theme');
+        localStorage.removeItem('sysmagnet_user');
+        localStorage.removeItem('sysmagnet_profile_extras');
         
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const key = localStorage.key(i);
@@ -162,8 +162,8 @@ export const AuthProvider = ({ children }) => {
         }
         
         if (themeVal) {
-          localStorage.setItem('eron-crm:theme', themeVal);
-          localStorage.setItem('eron_theme', themeVal);
+          localStorage.setItem('sysmagnet-crm:theme', themeVal);
+          localStorage.setItem('sysmagnet_theme', themeVal);
         }
       } catch (e) {
         console.warn('Storage cleanup error during logout:', e);

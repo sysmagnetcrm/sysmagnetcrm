@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 
-const EronSelect = ({
+const SysSelect = ({
   label,
   value,
   onChange,
@@ -182,4 +182,4 @@ const EronSelect = ({
   );
 };
 
-export default EronSelect;
+export default SysSelect;

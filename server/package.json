@@ -1,7 +1,7 @@
 {
-  "name": "eron-crm-server",
+  "name": "sysmagnet-crm-server",
   "version": "1.0.0",
-  "description": "Eron-CRM Backend Server",
+  "description": "Sysmagnet-CRM Backend Server",
   "main": "server.supabase.js",
   "scripts": {
     "start": "node server.supabase.js",
@@ -30,6 +30,6 @@
     "cross-env": "^7.0.3"
   },
   "keywords": ["crm", "backend", "api"],
-  "author": "Eron-CRM Team",
+  "author": "Sysmagnet-CRM Team",
   "license": "MIT"
 }

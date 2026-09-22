@@ -13,7 +13,7 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [theme, setThemeState] = useState(() => {
     try {
-      const stored = localStorage.getItem('eron-crm:theme') || localStorage.getItem('eron_theme');
+      const stored = localStorage.getItem('sysmagnet-crm:theme') || localStorage.getItem('sysmagnet_theme');
       return stored || 'system';
     } catch {
       return 'system';
@@ -48,8 +48,8 @@ export const ThemeProvider = ({ children }) => {
     updateTheme();
 
     try {
-      localStorage.setItem('eron-crm:theme', theme);
-      localStorage.setItem('eron_theme', theme);
+      localStorage.setItem('sysmagnet-crm:theme', theme);
+      localStorage.setItem('sysmagnet_theme', theme);
     } catch {}
 
     if (theme === 'system') {

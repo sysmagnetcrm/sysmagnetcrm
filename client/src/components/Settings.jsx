@@ -458,7 +458,7 @@ const Settings = ({ userRole = 'sales', onToast }) => {
                   <div className="border border-[#E4E7EC] rounded-2xl p-5 space-y-4">
                     <h3 className="font-bold text-[#101828] text-base">Active Sessions</h3>
                     <p className="text-xs text-[#667085]">
-                      You are currently signed into Eron-CRM on this device. You can invalidate all active tokens.
+                      You are currently signed into Sysmagnet-CRM on this device. You can invalidate all active tokens.
                     </p>
                     <button
                       onClick={() => {
@@ -536,7 +536,7 @@ const Settings = ({ userRole = 'sales', onToast }) => {
                       { key: 'payment_alerts', label: 'Payment & Invoice Alerts', desc: 'Alerts when client payments are logged or invoices are due' },
                       { key: 'lead_updates', label: 'Lead Activity Updates', desc: 'Notify when new leads arrive or change qualification status' },
                       { key: 'client_updates', label: 'Client Portal Notifications', desc: 'Receive messages when clients view tasks or upload files' },
-                      { key: 'system_alerts', label: 'System Maintenance Notices', desc: 'Important operational notices regarding Eron-CRM uptime' },
+                      { key: 'system_alerts', label: 'System Maintenance Notices', desc: 'Important operational notices regarding Sysmagnet-CRM uptime' },
                     ].map((n) => (
                       <div key={n.key} className="flex items-center justify-between p-4 border border-[#E4E7EC] rounded-2xl">
                         <div>
@@ -755,7 +755,7 @@ const Settings = ({ userRole = 'sales', onToast }) => {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-xs text-[#667085] block">App Version</span>
-                        <span className="font-bold text-[#101828]">Eron-CRM v2.4.0 (Enterprise)</span>
+                        <span className="font-bold text-[#101828]">Sysmagnet-CRM v2.4.0 (Enterprise)</span>
                       </div>
                       <div>
                         <span className="text-xs text-[#667085] block">Environment</span>

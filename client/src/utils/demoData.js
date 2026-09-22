@@ -20,8 +20,8 @@ export const DEMO_TASKS = [
 
 export const DEMO_USERS = [
   { id: 1, name: 'Admin User', email: 'demo@sysdevcode.com', role: 'admin' },
-  { id: 2, name: 'Sanjay (Sales)', email: 'sanjay@eron-crm.com', role: 'sales' },
-  { id: 3, name: 'Arun (Dev)', email: 'arun@eron-crm.com', role: 'developer' }
+  { id: 2, name: 'Sanjay (Sales)', email: 'sanjay@sysmagnet-crm.com', role: 'sales' },
+  { id: 3, name: 'Arun (Dev)', email: 'arun@sysmagnet-crm.com', role: 'developer' }
 ];
 
 export const DEMO_LEADS = [

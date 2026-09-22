@@ -1,7 +1,7 @@
 import React, { useState, forwardRef } from 'react';
 import { Icon } from '@iconify/react';
 
-const EronInput = forwardRef(({
+const SysInput = forwardRef(({
   label,
   id,
   name,
@@ -137,6 +137,6 @@ const EronInput = forwardRef(({
   );
 });
 
-EronInput.displayName = 'EronInput';
+SysInput.displayName = 'SysInput';
 
-export default EronInput;
+export default SysInput;

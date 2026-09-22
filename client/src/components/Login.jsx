@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabaseClient';
-import EronInput from './EronInput';
+import SysInput from './SysInput';
 
 // Helper to map technical backend errors to safe, user-friendly messages
 export const mapAuthError = (error) => {
@@ -107,16 +107,16 @@ const Login = () => {
           {/* Brand Header */}
           <div className="text-center mb-6">
             <div className="w-12 h-12 bg-[#FF8A1F] text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-sm mx-auto mb-3">
-              E
+              S
             </div>
             <div className="text-[11px] font-bold uppercase tracking-widest text-[#FF8A1F]">
-              Eron-CRM
+              Sysmagnet-CRM
             </div>
             <h1 className="text-2xl font-bold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight mt-1">
               Welcome back
             </h1>
             <p className="text-sm text-[#475569] dark:text-[#CBD5E1] mt-1">
-              Sign in to your Eron-CRM workspace.
+              Sign in to your Sysmagnet-CRM workspace.
             </p>
           </div>
 
@@ -133,7 +133,7 @@ const Login = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate={false}>
-            <EronInput
+            <SysInput
               id="email"
               name="email"
               type="email"
@@ -151,7 +151,7 @@ const Login = () => {
             />
 
             <div className="space-y-1">
-              <EronInput
+              <SysInput
                 id="password"
                 name="password"
                 type="password"
@@ -262,7 +262,7 @@ const Login = () => {
                   </div>
                 )}
 
-                <EronInput
+                <SysInput
                   id="recovery-email"
                   type="email"
                   label="Work Email Address"
@@ -309,7 +309,7 @@ const Login = () => {
 
       {/* Footer Outside Card */}
       <footer className="text-xs text-[#94A3B8] dark:text-[#7C8799] text-center font-medium py-2">
-        Eron-CRM &copy; {new Date().getFullYear()} &middot; Powered by Sysdevcode
+        Sysmagnet-CRM &copy; {new Date().getFullYear()} &middot; Powered by Sysdevcode
       </footer>
     </div>
   );

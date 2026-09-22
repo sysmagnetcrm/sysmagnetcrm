@@ -43,7 +43,7 @@ class ModuleErrorBoundary extends Component {
               Unable to load {this.props.moduleName || 'this section'}
             </h2>
             <p className="text-xs text-[#667085] mt-1 leading-relaxed">
-              Something unexpected happened while loading this page. The rest of Eron-CRM remains fully operational.
+              Something unexpected happened while loading this page. The rest of Sysmagnet-CRM remains fully operational.
             </p>
           </div>
 

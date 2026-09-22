@@ -6,7 +6,7 @@ import { logger } from './logger';
  */
 export const generateReferenceId = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let ref = 'ERN-';
+  let ref = 'SYS-';
   for (let i = 0; i < 6; i++) {
     ref += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -64,7 +64,7 @@ export const normalizeError = (rawError, context = {}) => {
       code: 'NETWORK_ERROR',
       category: ERROR_CATEGORIES.NETWORK_ERROR,
       userMessage: 'Connection problem.',
-      actionMessage: 'We couldn\'t reach Eron-CRM services. Check your internet connection and try again.',
+      actionMessage: 'We couldn\'t reach Sysmagnet-CRM services. Check your internet connection and try again.',
       retryable: true,
       referenceId,
     };

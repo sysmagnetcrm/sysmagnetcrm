@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import FormDrawer from './FormDrawer';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 import EmptyState from './EmptyState';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -145,7 +145,7 @@ const AddTaskDrawer = ({ isOpen, onClose, onSubmit }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <EronSelect
+          <SysSelect
             label="Status"
             value={formData.status}
             onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
@@ -156,7 +156,7 @@ const AddTaskDrawer = ({ isOpen, onClose, onSubmit }) => {
             ]}
           />
 
-          <EronSelect
+          <SysSelect
             label="Priority"
             value={formData.priority}
             onChange={(val) => setFormData(prev => ({ ...prev, priority: val }))}

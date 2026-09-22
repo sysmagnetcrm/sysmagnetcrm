@@ -4,7 +4,7 @@ import PageHeader from './PageHeader';
 import StatCard from './StatCard';
 import FilterBar from './FilterBar';
 import FormDrawer from './FormDrawer';
-import EronSelect from './EronSelect';
+import SysSelect from './SysSelect';
 import CurrencyInput from './CurrencyInput';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
@@ -380,7 +380,7 @@ const Payments = () => {
             </h4>
           </div>
 
-          <EronSelect
+          <SysSelect
             label="Select Client Organization *"
             required
             value={formData.clientId}
@@ -473,7 +473,7 @@ const Payments = () => {
               />
             </div>
 
-            <EronSelect
+            <SysSelect
               label="Payment Method"
               value={formData.paymentMethod}
               onChange={(val) => setFormData(prev => ({ ...prev, paymentMethod: val }))}

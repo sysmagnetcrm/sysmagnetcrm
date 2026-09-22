@@ -1,4 +1,4 @@
--- Eron-CRM Master Database Schema and RLS Policies
+-- Sysmagnet-CRM Master Database Schema and RLS Policies
 -- Created: 2026-08-23
 
 -- Enable UUID extension
