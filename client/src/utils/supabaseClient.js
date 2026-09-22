@@ -20,6 +20,11 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
+      // Custom lock bypass to prevent Navigator LockManager collision errors in multi-tab / concurrent auth calls
+      lock: async (_name, _acquireTimeout, fn) => {
+        return await fn();
+      },
     },
   }
 );
