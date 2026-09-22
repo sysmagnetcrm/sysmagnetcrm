@@ -1,0 +1,63 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Run every 2 days at 08:00 UTC (10:00 AM IST)
+    - cron: '0 8 */2 * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase to prevent project pause
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          echo "Pinging Supabase project: phmwijxrqrzykfcaljwm"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X GET \
+            "https://phmwijxrqrzykfcaljwm.supabase.co/rest/v1/clients?limit=1&select=id" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            --max-time 30)
+
+          echo "HTTP status from Supabase: $RESPONSE"
+
+          if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "401" ] || [ "$RESPONSE" = "403" ]; then
+            echo "✅ Supabase project is alive (status: $RESPONSE)"
+          else
+            echo "⚠️ Unexpected response: $RESPONSE"
+            # Don't fail — this might be a network blip; just warn.
+          fi
+
+      - name: Ping Supabase Auth endpoint (secondary)
+        run: |
+          echo "Secondary ping via Auth endpoint..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X GET \
+            "https://phmwijxrqrzykfcaljwm.supabase.co/auth/v1/settings" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            --max-time 30)
+
+          echo "Auth endpoint status: $RESPONSE"
+
+      - name: Check project status via Management API
+        run: |
+          STATUS=$(curl -s \
+            "https://api.supabase.com/v1/projects/phmwijxrqrzykfcaljwm" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status', 'UNKNOWN'))" 2>/dev/null || echo "API_ERROR")
+
+          echo "Project status: $STATUS"
+
+          if [ "$STATUS" = "INACTIVE" ] || [ "$STATUS" = "PAUSED" ]; then
+            echo "🔴 Project is paused! Attempting restore..."
+            curl -s -X POST \
+              "https://api.supabase.com/v1/projects/phmwijxrqrzykfcaljwm/restore" \
+              -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+              -H "Content-Type: application/json"
+            echo "Restore triggered."
+          else
+            echo "✅ Project status: $STATUS"
+          fi

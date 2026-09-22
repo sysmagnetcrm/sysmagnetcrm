@@ -2,59 +2,63 @@ import { supabase } from './supabaseClient';
 import { logger } from './logger';
 
 const PING_STORAGE_KEY = 'sysmagnet-crm:lastSupabasePing';
-const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000; // 48 hours in ms (172,800,000)
+const PING_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours (safer than 48h)
 let timerId = null;
 
 /**
- * Execute a ping to Supabase auth to keep project active (prevents 7-day pause timeout).
+ * Execute a ping to Supabase to keep project active.
+ * Uses a lightweight auth session check — no data is read/written.
  */
 export const pingSupabase = async () => {
   try {
-    const { error } = await supabase.auth.getSession();
+    // Use the REST endpoint with a limit=0 query — extremely lightweight
+    const { error } = await supabase.from('clients').select('id').limit(1).maybeSingle();
     const timestamp = Date.now();
     localStorage.setItem(PING_STORAGE_KEY, timestamp.toString());
-    
-    if (error) {
-      logger.warn('Supabase keep-alive ping return error:', { message: error.message });
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 = no rows found — that's fine, project is alive
+      logger.warn('Supabase keep-alive ping returned error:', { code: error.code, message: error.message });
     } else {
-      logger.info('Supabase keep-alive ping successful:', { timestamp: new Date(timestamp).toISOString() });
+      logger.info('✅ Supabase keep-alive ping OK', { timestamp: new Date(timestamp).toISOString() });
     }
     return true;
   } catch (err) {
-    logger.error('Supabase keep-alive ping failed exception:', { error: err?.message || err });
+    logger.error('Supabase keep-alive ping failed:', { error: err?.message || err });
     return false;
   }
 };
 
 /**
  * Start the automatic Supabase Keep-Alive service.
- * - Pings immediately if last ping was > 48 hours ago or never performed.
- * - Sets an interval to ping every 48 hours.
+ * - Pings immediately if last ping was >24 hours ago or never done.
+ * - Sets a recurring 24-hour interval.
  */
 export const startSupabaseKeepAlive = () => {
   const lastPingStr = localStorage.getItem(PING_STORAGE_KEY);
   const lastPing = lastPingStr ? parseInt(lastPingStr, 10) : 0;
   const now = Date.now();
 
-  if (!lastPing || (now - lastPing) >= TWO_DAYS_MS) {
-    logger.info('Executing scheduled Supabase keep-alive ping (due)...');
+  if (!lastPing || (now - lastPing) >= PING_INTERVAL_MS) {
+    logger.info('Executing Supabase keep-alive ping (due)...');
     pingSupabase();
   } else {
-    const nextPingInHours = Math.round((TWO_DAYS_MS - (now - lastPing)) / (1000 * 60 * 60));
-    logger.info(`Supabase keep-alive ping active. Next check due in ~${nextPingInHours} hours.`);
+    const nextInHours = Math.round((PING_INTERVAL_MS - (now - lastPing)) / (1000 * 60 * 60));
+    logger.info(`Supabase keep-alive active. Next ping in ~${nextInHours}h.`);
   }
 
   if (timerId) clearInterval(timerId);
 
-  // Set recurring timer for every 48 hours
   timerId = setInterval(() => {
-    logger.info('Recurring 48-hour Supabase keep-alive ping triggered.');
+    logger.info('24-hour Supabase keep-alive ping triggered.');
     pingSupabase();
-  }, TWO_DAYS_MS);
+  }, PING_INTERVAL_MS);
+
+  return timerId;
 };
 
 /**
- * Stop the keep-alive service.
+ * Stop the keep-alive service (call on logout/unmount).
  */
 export const stopSupabaseKeepAlive = () => {
   if (timerId) {
