@@ -107,12 +107,20 @@ export const normalizeError = (rawError, context = {}) => {
   }
 
   // 5. RLS / Authorization Permission Failures
-  if (rawMsg.includes('permission denied') || rawMsg.includes('rls') || rawCode === '42501' || rawCode === '403') {
+  if (
+    rawMsg.includes('permission denied') ||
+    rawMsg.includes('rls') ||
+    rawMsg.includes('row-level security') ||
+    rawMsg.includes('violates') ||
+    rawCode === '42501' ||
+    rawCode === '403' ||
+    rawCode === 'PGRST116'
+  ) {
     return {
       code: 'AUTHORIZATION_DENIED',
       category: ERROR_CATEGORIES.AUTHORIZATION_ERROR,
-      userMessage: 'Access restricted.',
-      actionMessage: 'You don\'t have permission to perform this action.',
+      userMessage: 'Permission Denied: Database Row-Level Security (RLS) policy restricted inserting client record.',
+      actionMessage: 'Please run the provided RLS policy SQL in your Supabase SQL Editor to grant client permissions.',
       retryable: false,
       referenceId,
     };

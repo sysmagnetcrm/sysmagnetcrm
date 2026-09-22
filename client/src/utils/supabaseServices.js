@@ -124,7 +124,13 @@ export const clientsAPI = {
     return wrap(query);
   },
   getOne: (id) => wrap(supabase.from('clients').select('*').eq('id', id).single()),
-  create: (data) => wrap(supabase.from('clients').insert(data).select().single()),
+  create: async (data) => {
+    const res = await wrap(supabase.from('clients').insert(data).select());
+    if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+      return { data: res.data[0] };
+    }
+    return res;
+  },
   update: (id, data) => wrap(supabase.from('clients').update(data).eq('id', id).select().single()),
   delete: (id) => wrap(supabase.from('clients').delete().eq('id', id)),
 };
