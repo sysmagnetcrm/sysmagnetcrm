@@ -473,11 +473,14 @@ function AppContent() {
           <Clients
             clients={clients}
             onSelect={setSelectedClient}
+            onSelectClient={setSelectedClient}
             onAdd={handleAddClient}
+            onCreateClient={handleAddClient}
             onCreateTask={handleCreateTaskFromClient}
             searchQuery={searchQuery}
             userRole={user?.role}
             onDelete={handleDeleteClient}
+            onDeleteClient={handleDeleteClient}
           />
         );
       case 'tasks':

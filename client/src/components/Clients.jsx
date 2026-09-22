@@ -84,10 +84,13 @@ const ClientCard = ({ client, onSelect, onCreateTask, onDelete, userRole }) => {
 
 const Clients = ({
   clients = [],
-  onSelectClient,
+  onSelect,
+  onSelectClient = onSelect,
   onCreateTask,
-  onCreateClient,
-  onDeleteClient,
+  onAdd,
+  onCreateClient = onAdd,
+  onDelete,
+  onDeleteClient = onDelete,
   userRole = 'admin',
   loading = false,
   error = null,
@@ -160,10 +163,22 @@ const Clients = ({
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const finalService = isCustomService ? customServiceInput.trim() : formData.service_type;
 
+    const saveFn = onCreateClient || onAdd;
+    if (!saveFn) {
+      console.error('No create client handler attached to Clients component.');
+      alert('Client handler error: unable to process save.');
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      alert('Company Name is required.');
+      return;
+    }
+
+    const finalService = isCustomService ? customServiceInput.trim() : formData.service_type;
     if (!finalService) {
-      alert('Please select or specify a service type.');
+      alert('Please select or enter a service type.');
       return;
     }
 
@@ -174,12 +189,11 @@ const Clients = ({
 
     setSubmitting(true);
     try {
-      if (onCreateClient) {
-        const res = await onCreateClient(payload);
-        if (res && res.success === false) {
-          console.error('Client creation failed:', res.error);
-          return;
-        }
+      const res = await saveFn(payload);
+      if (res && res.success === false) {
+        console.error('Client creation failed:', res.error);
+        alert(`Failed to add client: ${res.error || 'Database rejected request'}`);
+        return;
       }
 
       if (isCustomService && customServiceInput.trim()) {
@@ -200,6 +214,7 @@ const Clients = ({
       });
     } catch (err) {
       console.error('Client creation error:', err);
+      alert('An unexpected error occurred while adding the client.');
     } finally {
       setSubmitting(false);
     }

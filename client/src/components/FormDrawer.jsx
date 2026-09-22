@@ -54,7 +54,7 @@ const FormDrawer = ({
         </div>
 
         {/* Scrollable Form Body (Flex 1, Only Body Scrolls, pb-10 guarantees zero footer overlap) */}
-        <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
+        <form onSubmit={onSubmit} noValidate className="flex-1 flex flex-col justify-between overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6 pb-10 space-y-7">
             {children}
           </div>
