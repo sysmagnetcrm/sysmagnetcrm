@@ -12,7 +12,14 @@ export const useClients = (filters = {}, enabled = true) => {
       setError(null);
 
       const response = await clientsAPI.getAll(filters);
-      setClients(response.data || []);
+      const rawList = response.data || [];
+      const normalized = rawList.map(c => ({
+        ...c,
+        contact: c.contact_person || c.contact || '',
+        contact_person: c.contact_person || c.contact || '',
+        service_type: c.service_type || c.service || '',
+      }));
+      setClients(normalized);
     } catch (err) {
       console.error('Failed to load clients:', err?.appError?.userMessage || err?.message);
       setError(err);
@@ -35,20 +42,27 @@ export const useClients = (filters = {}, enabled = true) => {
 
   const createClient = async (clientData) => {
     try {
-      // Standardize field names for database compatibility
+      // Standardize field names for database compatibility (table schema uses contact_person & service_type)
       const payload = {
         name: clientData.name,
-        contact: clientData.contact || null,
+        contact_person: clientData.contact || clientData.contact_person || null,
         phone: clientData.phone || null,
         email: clientData.email || null,
         status: clientData.status || 'Active',
-        service: clientData.service || clientData.service_type || clientData.serviceType || null,
         service_type: clientData.service_type || clientData.serviceType || clientData.service || null,
         notes: clientData.notes || null,
       };
       const response = await clientsAPI.create(payload);
-      setClients(prev => [response.data, ...prev]);
-      return { success: true, data: response.data };
+      const created = {
+        ...(response.data || payload),
+        id: response.data?.id || `client-${Date.now()}`,
+        contact: response.data?.contact_person || payload.contact_person || '',
+        contact_person: response.data?.contact_person || payload.contact_person || '',
+        service_type: response.data?.service_type || payload.service_type || '',
+        created_at: response.data?.created_at || new Date().toISOString(),
+      };
+      setClients(prev => [created, ...prev]);
+      return { success: true, data: created };
     } catch (err) {
       console.error('Error creating client:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to create client' };
@@ -57,10 +71,11 @@ export const useClients = (filters = {}, enabled = true) => {
 
   const updateClient = async (id, clientData) => {
     try {
-      // Standardize field names for database compatibility
       const payload = {};
       if (clientData.name !== undefined) payload.name = clientData.name;
-      if (clientData.contact !== undefined) payload.contact = clientData.contact;
+      if (clientData.contact !== undefined || clientData.contact_person !== undefined) {
+        payload.contact_person = clientData.contact || clientData.contact_person;
+      }
       if (clientData.phone !== undefined) payload.phone = clientData.phone;
       if (clientData.email !== undefined) payload.email = clientData.email;
       if (clientData.status !== undefined) payload.status = clientData.status;
@@ -69,14 +84,18 @@ export const useClients = (filters = {}, enabled = true) => {
       const serviceVal = clientData.service_type || clientData.serviceType || clientData.service;
       if (serviceVal !== undefined) {
         payload.service_type = serviceVal;
-        payload.service = serviceVal;
       }
       if (clientData.source !== undefined) payload.source = clientData.source;
 
       await clientsAPI.update(id, payload);
       setClients(prev =>
         prev.map(client =>
-          client.id === id ? { ...client, ...payload, updated_at: new Date().toISOString() } : client
+          client.id === id ? {
+            ...client,
+            ...payload,
+            contact: payload.contact_person !== undefined ? payload.contact_person : client.contact,
+            updated_at: new Date().toISOString(),
+          } : client
         )
       );
       return { success: true };

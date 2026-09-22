@@ -16,13 +16,12 @@ const ClientDrawer = ({ client, onClose, onUpdate }) => {
     notes: client?.notes || ''
   });
   const [customService, setCustomService] = useState('');
-  const serviceOptions = ['Web Development', 'ERP', 'SEO', 'SMM', 'Mobile App', 'Branding', 'Consulting', 'Other'];
+  const serviceOptions = ['Web Development', 'Production', 'Marketing', 'App Development', 'Cybersecurity', 'Other'];
 
   const handleSave = async () => {
     const payload = {
       ...formData,
       service_type: formData.serviceType || formData.service || '',
-      service: formData.serviceType || formData.service || '',
     };
     if (onUpdate) {
       const res = await onUpdate(client.id, payload);

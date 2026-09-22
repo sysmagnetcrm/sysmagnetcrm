@@ -109,9 +109,21 @@ const Clients = ({
     phone: '',
     email: '',
     status: 'Active',
-    service_type: 'Software',
+    service_type: 'Web Development',
     notes: '',
   });
+
+  const [customServices, setCustomServices] = useState([]);
+  const [isCustomService, setIsCustomService] = useState(false);
+  const [customServiceInput, setCustomServiceInput] = useState('');
+
+  const DEFAULT_SERVICE_OPTIONS = [
+    'Web Development',
+    'Production',
+    'Marketing',
+    'App Development',
+    'Cybersecurity',
+  ];
 
   const counts = useMemo(() => {
     const total = clients.length;
@@ -126,7 +138,7 @@ const Clients = ({
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch = !q ||
         (c.name || '').toLowerCase().includes(q) ||
-        (c.contact || '').toLowerCase().includes(q) ||
+        (c.contact || c.contact_person || '').toLowerCase().includes(q) ||
         (c.email || '').toLowerCase().includes(q) ||
         (c.phone || '').toLowerCase().includes(q);
 
@@ -148,23 +160,42 @@ const Clients = ({
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    const finalService = isCustomService ? customServiceInput.trim() : formData.service_type;
+
+    if (!finalService) {
+      alert('Please select or specify a service type.');
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      service_type: finalService,
+    };
+
     setSubmitting(true);
     try {
       if (onCreateClient) {
-        const res = await onCreateClient(formData);
+        const res = await onCreateClient(payload);
         if (res && res.success === false) {
           console.error('Client creation failed:', res.error);
           return;
         }
       }
+
+      if (isCustomService && customServiceInput.trim()) {
+        setCustomServices(prev => Array.from(new Set([...prev, customServiceInput.trim()])));
+      }
+
       setShowAddDrawer(false);
+      setIsCustomService(false);
+      setCustomServiceInput('');
       setFormData({
         name: '',
         contact: '',
         phone: '',
         email: '',
         status: 'Active',
-        service_type: 'Software',
+        service_type: 'Web Development',
         notes: '',
       });
     } catch (err) {
@@ -247,10 +278,8 @@ const Clients = ({
             key: 'service_type',
             label: 'Service',
             options: [
-              { value: 'Software', label: 'Software' },
-              { value: 'Web Design', label: 'Web Design' },
-              { value: 'Marketing', label: 'Marketing' },
-              { value: 'Consulting', label: 'Consulting' },
+              ...DEFAULT_SERVICE_OPTIONS.map(opt => ({ value: opt, label: opt })),
+              ...customServices.map(cs => ({ value: cs, label: cs })),
             ],
           },
         ]}
@@ -294,7 +323,10 @@ const Clients = ({
       {/* Form Drawer */}
       <FormDrawer
         isOpen={showAddDrawer}
-        onClose={() => setShowAddDrawer(false)}
+        onClose={() => {
+          setShowAddDrawer(false);
+          setIsCustomService(false);
+        }}
         title="Add New Client"
         subtitle="Create a new client organization profile."
         submitLabel="Add Client"
@@ -380,17 +412,50 @@ const Clients = ({
               ]}
             />
 
-            <SysSelect
-              label="Service Type"
-              value={formData.service_type}
-              onChange={(val) => setFormData(prev => ({ ...prev, service_type: val }))}
-              options={[
-                { value: 'Software', label: 'Software' },
-                { value: 'Web Design', label: 'Web Design' },
-                { value: 'Marketing', label: 'Marketing' },
-                { value: 'Consulting', label: 'Consulting' },
-              ]}
-            />
+            <div>
+              <SysSelect
+                label="Service Type"
+                value={isCustomService ? 'CREATE_NEW' : formData.service_type}
+                onChange={(val) => {
+                  if (val === 'CREATE_NEW') {
+                    setIsCustomService(true);
+                    setCustomServiceInput('');
+                    setFormData(prev => ({ ...prev, service_type: '' }));
+                  } else {
+                    setIsCustomService(false);
+                    setFormData(prev => ({ ...prev, service_type: val }));
+                  }
+                }}
+                options={[
+                  ...DEFAULT_SERVICE_OPTIONS.map(opt => ({ value: opt, label: opt })),
+                  ...customServices.map(cs => ({ value: cs, label: cs })),
+                  { value: 'CREATE_NEW', label: '+ Create New Service Type' },
+                ]}
+              />
+
+              {isCustomService && (
+                <div className="mt-2.5 animate-fade-fast">
+                  <label className="text-[11px] font-bold text-[#FF8A1F] uppercase tracking-wider block mb-1">
+                    New Service Name *
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      required
+                      value={customServiceInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCustomServiceInput(val);
+                        setFormData(prev => ({ ...prev, service_type: val }));
+                      }}
+                      placeholder="e.g. AI Automation, UI/UX..."
+                      className="saas-input text-xs h-[40px] pl-9 border-[#FF8A1F] ring-2 ring-[#FF8A1F]/15 bg-[#FFF4E8]/20 dark:bg-[#1E232C]"
+                    />
+                    <Icon icon="heroicons:sparkles" className="w-4 h-4 text-[#FF8A1F] absolute left-3 pointer-events-none shrink-0" />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
