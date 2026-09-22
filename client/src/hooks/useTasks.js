@@ -13,7 +13,7 @@ export const useTasks = (filters = {}, enabled = true) => {
       const response = await tasksAPI.getAll(filters);
       setTasks(response.data || []);
     } catch (err) {
-      console.error('Failed to load tasks:', err?.response?.data || err?.message);
+      console.error('Failed to load tasks:', err?.appError?.userMessage || err?.message);
       setError(err);
       setTasks([]);
     } finally {
@@ -27,9 +27,8 @@ export const useTasks = (filters = {}, enabled = true) => {
       setTasks(prev => prev.filter(t => t.id !== taskId));
       return { success: true };
     } catch (err) {
-      // Fallback: remove locally
-      setTasks(prev => prev.filter(t => t.id !== taskId));
-      return { success: true };
+      console.error('Error deleting task:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to delete task' };
     }
   };
 
@@ -39,75 +38,53 @@ export const useTasks = (filters = {}, enabled = true) => {
       setTasks(prev => [response.data, ...prev]);
       return { success: true, data: response.data };
     } catch (err) {
-      // For demo purposes, add to local state
-      const newTask = { 
-        id: Date.now(), 
-        ...taskData, 
-        status: 'Pending',
-        created_at: new Date().toISOString() 
-      };
-      setTasks(prev => [newTask, ...prev]);
-      return { success: true, data: newTask };
+      console.error('Error creating task:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to create task' };
     }
   };
 
   const updateTask = async (id, taskData) => {
     try {
       await tasksAPI.update(id, taskData);
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === id ? { ...task, ...taskData } : task
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === id ? { ...task, ...taskData, updated_at: new Date().toISOString() } : task
         )
       );
       return { success: true };
     } catch (err) {
-      // For demo purposes, update local state
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === id ? { ...task, ...taskData } : task
-        )
-      );
-      return { success: true };
+      console.error('Error updating task:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to update task' };
     }
   };
 
   const assignTask = async (taskId, userId) => {
     try {
       await tasksAPI.update(taskId, { assigned_to: userId, status: 'Pending' });
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, assigned_to: userId, status: 'Pending' } : task
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === taskId ? { ...task, assigned_to: userId, status: 'Pending', updated_at: new Date().toISOString() } : task
         )
       );
       return { success: true };
     } catch (err) {
-      // For demo purposes, update local state
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, assigned_to: userId, status: 'Pending' } : task
-        )
-      );
-      return { success: true };
+      console.error('Error assigning task:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to assign task' };
     }
   };
 
   const markTaskDone = async (taskId) => {
     try {
       await tasksAPI.update(taskId, { status: 'Done' });
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, status: 'Done' } : task
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === taskId ? { ...task, status: 'Done', updated_at: new Date().toISOString() } : task
         )
       );
       return { success: true };
     } catch (err) {
-      // For demo purposes, update local state
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, status: 'Done' } : task
-        )
-      );
-      return { success: true };
+      console.error('Error marking task done:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to mark task as done' };
     }
   };
 

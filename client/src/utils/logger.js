@@ -53,17 +53,17 @@ const sanitizeData = (data) => {
 
 export const logger = {
   error: (message, context = {}) => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.error(`[CRM ERROR] ${message}`, sanitizeData(context));
     }
   },
   warn: (message, context = {}) => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.warn(`[CRM WARN] ${message}`, sanitizeData(context));
     }
   },
   info: (message, context = {}) => {
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.info(`[CRM INFO] ${message}`, sanitizeData(context));
     }
   },

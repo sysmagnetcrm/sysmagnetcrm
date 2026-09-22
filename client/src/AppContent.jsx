@@ -8,6 +8,7 @@ import { useCandidates } from './hooks/useCandidates';
 import { useLeads } from './hooks/useLeads';
 import { useUsers } from './hooks/useUsers';
 import { usersAPI, notificationsAPI, presenceAPI, employeesAPI } from './utils/supabaseServices';
+import { startSupabaseKeepAlive, stopSupabaseKeepAlive } from './utils/supabaseKeepAlive';
 
 // Components
 import Login from './components/Login';
@@ -188,6 +189,13 @@ function AppContent() {
     beat();
     timer = setInterval(beat, 30000);
     return () => clearInterval(timer);
+  }, [isAuthenticated]);
+
+  // Supabase free tier keep-alive (prevents 7-day auto-pause)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    startSupabaseKeepAlive();
+    return () => stopSupabaseKeepAlive();
   }, [isAuthenticated]);
 
   // Toast management

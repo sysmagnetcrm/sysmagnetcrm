@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { normalizeError } from '../utils/errorHandler';
 
 const AuthContext = createContext();
 
@@ -123,7 +124,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        return { success: false, error: error.message || 'Invalid credentials' };
+        const normalized = normalizeError(error, { module: 'auth', action: 'login' });
+        return { success: false, error: normalized.userMessage };
       }
 
       if (data?.session && data?.user) {
@@ -137,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       }
       return { success: true };
     } catch (err) {
-      return { success: false, error: err.message || 'Login failed' };
+      const normalized = normalizeError(err, { module: 'auth', action: 'login' });
+      return { success: false, error: normalized.userMessage };
     }
   };
 

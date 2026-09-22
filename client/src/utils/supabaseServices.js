@@ -234,23 +234,35 @@ export const activitiesAPI = {
 // 11. REPORTS & DASHBOARD API
 export const reportsAPI = {
   getSummary: async () => {
-    const [leads, clients, payments, tasks] = await Promise.all([
-      supabase.from('leads').select('id', { count: 'exact', head: true }),
-      supabase.from('clients').select('id', { count: 'exact', head: true }),
-      supabase.from('payments').select('amount'),
-      supabase.from('tasks').select('id', { count: 'exact', head: true }),
-    ]);
+    try {
+      const [leads, clients, payments, tasks] = await Promise.all([
+        supabase.from('leads').select('id', { count: 'exact', head: true }),
+        supabase.from('clients').select('id', { count: 'exact', head: true }),
+        supabase.from('payments').select('amount'),
+        supabase.from('tasks').select('id', { count: 'exact', head: true }),
+      ]);
 
-    const totalRevenue = (payments.data || []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+      const totalRevenue = (payments.data || []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
 
-    return {
-      data: {
-        totalLeads: leads.count || 0,
-        totalClients: clients.count || 0,
-        totalTasks: tasks.count || 0,
-        totalRevenue,
-      },
-    };
+      return {
+        data: {
+          totalLeads: leads.count || 0,
+          totalClients: clients.count || 0,
+          totalTasks: tasks.count || 0,
+          totalRevenue,
+        },
+      };
+    } catch (err) {
+      console.error('Dashboard stats failed:', err?.appError?.userMessage || err?.message);
+      return {
+        data: {
+          totalLeads: 0,
+          totalClients: 0,
+          totalTasks: 0,
+          totalRevenue: 0,
+        },
+      };
+    }
   },
 };
 

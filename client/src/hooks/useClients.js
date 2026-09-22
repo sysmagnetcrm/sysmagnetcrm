@@ -10,11 +10,11 @@ export const useClients = (filters = {}, enabled = true) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await clientsAPI.getAll(filters);
       setClients(response.data || []);
     } catch (err) {
-      console.error('Failed to load clients:', err?.response?.data || err?.message);
+      console.error('Failed to load clients:', err?.appError?.userMessage || err?.message);
       setError(err);
       setClients([]);
     } finally {
@@ -28,7 +28,7 @@ export const useClients = (filters = {}, enabled = true) => {
       setClients(prev => prev.filter(c => c.id !== id));
       return { success: true };
     } catch (err) {
-      console.error('Error deleting client:', err);
+      console.error('Error deleting client:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to delete client' };
     }
   };
@@ -50,7 +50,7 @@ export const useClients = (filters = {}, enabled = true) => {
       setClients(prev => [response.data, ...prev]);
       return { success: true, data: response.data };
     } catch (err) {
-      console.error('Error creating client:', err);
+      console.error('Error creating client:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to create client' };
     }
   };
@@ -65,7 +65,7 @@ export const useClients = (filters = {}, enabled = true) => {
       if (clientData.email !== undefined) payload.email = clientData.email;
       if (clientData.status !== undefined) payload.status = clientData.status;
       if (clientData.notes !== undefined) payload.notes = clientData.notes;
-      
+
       const serviceVal = clientData.service_type || clientData.serviceType || clientData.service;
       if (serviceVal !== undefined) {
         payload.service_type = serviceVal;
@@ -74,14 +74,14 @@ export const useClients = (filters = {}, enabled = true) => {
       if (clientData.source !== undefined) payload.source = clientData.source;
 
       await clientsAPI.update(id, payload);
-      setClients(prev => 
-        prev.map(client => 
+      setClients(prev =>
+        prev.map(client =>
           client.id === id ? { ...client, ...payload, updated_at: new Date().toISOString() } : client
         )
       );
       return { success: true };
     } catch (err) {
-      console.error('Error updating client:', err);
+      console.error('Error updating client:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to update client' };
     }
   };

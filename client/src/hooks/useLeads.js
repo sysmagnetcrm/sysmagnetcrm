@@ -19,7 +19,7 @@ export const useLeads = (filters = {}, enabled = true) => {
       const response = await leadsAPI.getAll(filters);
       setLeads(response.data || []);
     } catch (err) {
-      console.error('Failed to load leads:', err?.response?.data || err?.message);
+      console.error('Failed to load leads:', err?.appError?.userMessage || err?.message);
       setError(err);
       setLeads([]);
     } finally {
@@ -30,11 +30,13 @@ export const useLeads = (filters = {}, enabled = true) => {
   const assignLead = async (id, userId) => {
     try {
       await leadsAPI.assign(id, userId);
-      setLeads(prev => prev.map(lead => lead.id === id ? { ...lead, assigned_to: userId, updated_at: new Date().toISOString() } : lead));
+      setLeads(prev => prev.map(lead =>
+        lead.id === id ? { ...lead, assigned_to: userId, updated_at: new Date().toISOString() } : lead
+      ));
       return { success: true };
     } catch (err) {
-      console.error('Error assigning lead:', err);
-      return { success: false, error: err?.response?.data?.error || err.message };
+      console.error('Error assigning lead:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to assign lead' };
     }
   };
 
@@ -44,9 +46,8 @@ export const useLeads = (filters = {}, enabled = true) => {
       setLeads(prev => prev.filter(l => l.id !== id));
       return { success: true };
     } catch (err) {
-      // Fallback: remove locally
-      setLeads(prev => prev.filter(l => l.id !== id));
-      return { success: true };
+      console.error('Error deleting lead:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to delete lead' };
     }
   };
 
@@ -56,7 +57,7 @@ export const useLeads = (filters = {}, enabled = true) => {
       setLeads(prev => [response.data, ...prev]);
       return { success: true, data: response.data };
     } catch (err) {
-      console.error('Error creating lead:', err);
+      console.error('Error creating lead:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to create lead' };
     }
   };
@@ -68,7 +69,7 @@ export const useLeads = (filters = {}, enabled = true) => {
       await fetchLeads();
       return { success: true };
     } catch (err) {
-      console.warn('API import failed, falling back to local import:', err?.message);
+      console.warn('API import failed, falling back to local import:', err?.appError?.userMessage || err?.message);
       // Fallback to local state to preserve UX in offline/demo mode
       const newLeads = leadsData.map(lead => ({
         id: Date.now() + Math.random(),
@@ -89,7 +90,7 @@ export const useLeads = (filters = {}, enabled = true) => {
       );
       return { success: true };
     } catch (err) {
-      console.error('Error updating lead:', err);
+      console.error('Error updating lead:', err?.appError?.userMessage || err?.message);
       return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to update lead' };
     }
   };
@@ -98,14 +99,13 @@ export const useLeads = (filters = {}, enabled = true) => {
     try {
       const leadId = (typeof id === 'object' && id) ? id.id : id;
       await leadsAPI.qualify(leadId);
-      setLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, status: 'Qualified', updated_at: new Date().toISOString() } : lead));
+      setLeads(prev => prev.map(lead =>
+        lead.id === leadId ? { ...lead, status: 'Qualified', updated_at: new Date().toISOString() } : lead
+      ));
       return { success: true };
     } catch (err) {
-      console.error('Error qualifying lead:', err);
-      // Optimistic update fallback
-      const leadId = (typeof id === 'object' && id) ? id.id : id;
-      setLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, status: 'Qualified', updated_at: new Date().toISOString() } : lead));
-      return { success: true };
+      console.error('Error qualifying lead:', err?.appError?.userMessage || err?.message);
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to qualify lead' };
     }
   };
 
@@ -116,14 +116,15 @@ export const useLeads = (filters = {}, enabled = true) => {
       setLeads(prev => prev.filter(lead => lead.id !== id));
       return { success: true };
     } catch (err) {
-      console.error('Error converting lead to client:', err);
-      // Do NOT remove locally on failure; surface the error so user can retry with proper role/fields
-      return { success: false, error: err?.response?.data?.error || err.message };
+      console.error('Error converting lead to client:', err?.appError?.userMessage || err?.message);
+      // Do NOT remove locally on failure; surface the error so user can retry
+      return { success: false, error: err?.appError?.userMessage || err?.message || 'Failed to convert lead to client' };
     }
   };
 
   useEffect(() => {
     fetchLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters), enabled]);
 
   return {
